@@ -132,68 +132,61 @@ The main objectives of FootVerse are:
 
 ---
 
-# Technology Stack
+# Tech Stack
 
 ## Frontend
 
-| Technology    | Purpose           |
-| ------------- | ----------------- |
-| Next.js 14    | React Framework   |
-| React         | User Interface    |
-| Tailwind CSS  | Styling           |
-| Framer Motion | Animations        |
-| Axios         | API Communication |
+| Technology               | Why It Was Used                                                                                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Next.js (App Router)** | Built the frontend application with server-side rendering, file-based routing, and improved performance for a modern e-commerce experience.                 |
+| **React.js**             | Created reusable UI components and managed the application's user interface efficiently.                                                                    |
+| **JavaScript (ES6+)**    | Implemented the frontend and backend application logic using modern JavaScript features.                                                                    |
+| **Tailwind CSS**         | Designed a responsive, clean, and modern user interface with utility-first CSS classes.                                                                     |
+| **Framer Motion**        | Added premium animations such as hero section transitions, floating shoe animations, smooth page transitions, hover effects, and interactive UI animations. |
+| **Context API**          | Managed global application state such as user authentication, shopping cart, and wishlist without excessive prop drilling.                                  |
 
 ---
 
 ## Backend
 
-| Technology         | Purpose             |
-| ------------------ | ------------------- |
-| Node.js            | JavaScript Runtime  |
-| Express.js         | REST API Framework  |
-| JWT                | Authentication      |
-| Nodemailer         | Email Service       |
-| bcrypt             | Password Encryption |
-| Express Middleware | API Security        |
+| Technology               | Why It Was Used                                                                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Node.js**              | Provided the JavaScript runtime for building the backend server.                                                                   |
+| **Express.js**           | Built RESTful APIs, handled routing, middleware, authentication, and business logic.                                               |
+| **MongoDB**              | Stored user accounts, products, carts, orders, wishlists, reviews, and other application data.                                     |
+| **Mongoose**             | Simplified MongoDB operations through schemas, models, and data validation.                                                        |
+| **Redis**                | Cached frequently accessed product and category data to improve response time and reduce repeated API requests to CJ Dropshipping. |
+| **JWT (JSON Web Token)** | Implemented secure user authentication and protected API routes.                                                                   |
+| **bcryptjs**             | Encrypted user passwords before storing them in the database for improved security.                                                |
+| **Nodemailer**           | Sent OTP verification emails, password reset emails, and other user notifications.                                                 |
+| **Stripe**               | Integrated secure online payment processing during checkout.                                                                       |
+| **dotenv**               | Managed sensitive environment variables such as API keys, database URLs, JWT secrets, and Stripe credentials.                      |
+| **Express Rate Limit**   | Protected APIs against excessive requests and brute-force attacks.                                                                 |
+| **Helmet**               | Added HTTP security headers to improve application security.                                                                       |
+| **CORS**                 | Allowed secure communication between the frontend and backend running on different origins.                                        |
+| **Morgan**               | Logged HTTP requests during development for easier debugging and monitoring.                                                       |
 
 ---
 
-## Database
+## Third-Party APIs & Integrations
 
-| Technology | Purpose                    |
-| ---------- | -------------------------- |
-| MongoDB    | Primary Database           |
-| Mongoose   | ODM (Object Data Modeling) |
-
----
-
-## Cache
-
-| Technology | Purpose                    |
-| ---------- | -------------------------- |
-| Redis      | High-Speed In-Memory Cache |
+| Technology              | Why It Was Used                                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **CJ Dropshipping API** | Retrieved live product data, inventory, product variants, shipping information, reviews, categories, sourcing details, tracking information, and order processing directly from CJ Dropshipping. |
+| **Stripe API**          | Processed secure online payments and managed payment confirmation during checkout.                                                                                                               |
+| **SMTP Email Service**  | Delivered OTP verification and password reset emails to users through Nodemailer.                                                                                                                |
 
 ---
 
-## Third-Party Services
+## Development Tools
 
-| Service         | Purpose             |
-| --------------- | ------------------- |
-| CJ Dropshipping | Live Product Source |
-| Stripe          | Payment Gateway     |
-| Gmail SMTP      | Email Delivery      |
-
----
-
-## Deployment
-
-| Service                    | Purpose          |
-| -------------------------- | ---------------- |
-| Vercel                     | Frontend Hosting |
-| Render                     | Backend Hosting  |
-| MongoDB Atlas *(Optional)* | Cloud Database   |
-| Redis Cloud *(Optional)*   | Cloud Cache      |
+| Technology  | Why It Was Used                                                                       |
+| ----------- | ------------------------------------------------------------------------------------- |
+| **Git**     | Tracked source code changes and maintained version history throughout development.    |
+| **GitHub**  | Hosted the project repository and managed version control and collaboration.          |
+| **VS Code** | Primary code editor used for frontend and backend development.                        |
+| **Postman** | Tested REST APIs, authentication, payments, and backend endpoints during development. |
+| **npm**     | Managed project dependencies and executed development scripts.                        |
 
 ---
 
