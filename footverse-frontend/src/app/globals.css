@@ -1,0 +1,47 @@
+/* Fonts are imported here in CSS (not only in layout.jsx) so the design
+   survives being pasted into ANY project — including Tailwind v4 setups. */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Oswald:wght@500;600&family=Inter:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Version-proof font classes — no Tailwind config required. */
+.font-playfair {
+  font-family: "Playfair Display", Georgia, serif;
+}
+.font-oswald {
+  font-family: "Oswald", "Arial Narrow", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #f7f4ef;
+  color: #33231a;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(165, 121, 58, 0.25);
+}
+
+:focus-visible {
+  outline: 2px solid #a5793a;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Safety net for non-Framer transitions when the user prefers reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
