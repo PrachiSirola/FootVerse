@@ -55,6 +55,40 @@ function stripHtml(html) {
     .trim();
 }
 
+
+/**
+ * Generate a clean, professional product description from the product's name,
+ * category and subcategory - used instead of CJ's raw HTML marketing copy.
+ */
+function generateDescription(product) {
+  const name = product && product.name ? product.name : "This pair";
+  const cat = (product && product.category ? product.category : "").toLowerCase();
+  const sub = (product && product.subcategory ? product.subcategory : "").toLowerCase();
+
+  let opener;
+  if (cat.includes("women")) opener = name + " blends an elegant silhouette with all-day comfort.";
+  else if (cat.includes("kids")) opener = name + " is built for active kids - lightweight, durable and easy to wear.";
+  else if (cat.includes("men")) opener = name + " pairs everyday durability with a refined, versatile design.";
+  else opener = name + " is crafted to balance comfort, durability and style.";
+
+  let mid;
+  if (sub.includes("sneaker") || sub.includes("running") || sub.includes("sport") || sub.includes("training"))
+    mid = "A cushioned footbed and breathable upper keep you comfortable through long days and active sessions, while a grippy outsole delivers confident traction on any surface.";
+  else if (sub.includes("formal") || sub.includes("loafer"))
+    mid = "A clean profile and premium finish make it easy to dress up, with a supportive insole that keeps you comfortable from the office to evening plans.";
+  else if (sub.includes("boot"))
+    mid = "Sturdy construction and a rugged sole offer dependable support and grip, while the padded collar adds comfort for all-day wear.";
+  else if (sub.includes("sandal") || sub.includes("slipper"))
+    mid = "A soft, contoured footbed and flexible sole make it effortless to slip on for relaxed, everyday comfort.";
+  else if (sub.includes("heel") || sub.includes("flat"))
+    mid = "A flattering shape and cushioned base bring together style and comfort so you can wear it from morning to evening.";
+  else
+    mid = "Quality materials, a comfortable fit and a durable sole make it a dependable choice for everyday wear.";
+
+  const closer = "Thoughtfully made with attention to detail, it is a reliable addition to your everyday rotation.";
+  return opener + " " + mid + " " + closer;
+}
+
 /**
  * Parse a CJ variantKey like "Black-Size39" or "Coffee-39" into { color, size }.
  * Falls back gracefully for odd formats like "10style-37".
@@ -94,8 +128,8 @@ export const getProduct = async (id) => {
       const goodPrice = Number(fromPool?.price) || Number(t.price) || 0;
       product = { ...(fromPool || {}), ...t, _id: id, id, price: goodPrice };
 
-      // Clean description (strip HTML) or hide if empty.
-      product.description = stripHtml(detail.description || t.description || "");
+      // Professional auto-generated description (replaces CJ raw HTML copy).
+      product.description = generateDescription(product);
 
       // Parse CJ variants into clean color + size, dedupe.
       if (Array.isArray(detail.variants) && detail.variants.length) {
