@@ -12,7 +12,7 @@
 
 ---
 
-# Project Overview
+## Project Overview
 
 FootVerse is a full-stack footwear e-commerce platform developed as a major academic project to demonstrate modern software engineering practices and real-world e-commerce architecture.
 
@@ -38,9 +38,9 @@ The main objectives of FootVerse are:
 
 ---
 
-# Features
+## Features
 
-## User Authentication
+### User Authentication
 
 * User Registration
 * Secure Login
@@ -53,7 +53,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Product Management
+### Product Management
 
 * Live Product Fetching from CJ Dropshipping
 * Product Categories
@@ -67,7 +67,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Wishlist
+### Wishlist
 
 * Add Products to Wishlist
 * Remove Products
@@ -75,7 +75,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Shopping Cart
+### Shopping Cart
 
 * Add to Cart
 * Remove from Cart
@@ -85,7 +85,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Checkout & Payments
+### Checkout & Payments
 
 * Secure Stripe Payment Gateway
 * Shipping Information
@@ -94,7 +94,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Order Management
+### Order Management
 
 * Place Orders
 * View Order History
@@ -115,7 +115,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Email Services
+### Email Services
 
 * OTP Verification Email
 * Password Reset Email
@@ -123,7 +123,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Performance Optimization
+### Performance Optimization
 
 * Redis Product Caching
 * Faster API Responses
@@ -132,9 +132,9 @@ The main objectives of FootVerse are:
 
 ---
 
-# Tech Stack
+## Tech Stack
 
-## Frontend
+### Frontend
 
 | Technology               | Why It Was Used                                                                                                                                             |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -147,7 +147,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Backend
+### Backend
 
 | Technology               | Why It Was Used                                                                                                                    |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -168,7 +168,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Third-Party APIs & Integrations
+### Third-Party APIs & Integrations
 
 | Technology              | Why It Was Used                                                                                                                                                                                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -178,7 +178,7 @@ The main objectives of FootVerse are:
 
 ---
 
-## Development Tools
+### Development Tools
 
 | Technology  | Why It Was Used                                                                       |
 | ----------- | ------------------------------------------------------------------------------------- |
@@ -190,9 +190,7 @@ The main objectives of FootVerse are:
 
 ---
 
-➡️ **Part 2** covers the complete system architecture, CJ Dropshipping workflow, Redis caching, authentication flow, payment flow, and application data flow.
-
-# System Architecture
+## System Architecture
 
 FootVerse follows a modular client-server architecture where the frontend, backend, database, cache, and third-party services are separated to improve scalability and maintainability.
 
@@ -215,7 +213,7 @@ FootVerse follows a modular client-server architecture where the frontend, backe
  CJ Dropshipping API
 ```
 
-### Architecture Overview
+#### Architecture Overview
 
 * **Frontend:** Handles user interface, product browsing, authentication, cart, wishlist, and checkout.
 * **Backend:** Processes API requests, authentication, business logic, payment handling, and communication with external services.
@@ -226,11 +224,11 @@ FootVerse follows a modular client-server architecture where the frontend, backe
 
 ---
 
-# CJ Dropshipping Integration
+## CJ Dropshipping Integration
 
 One of the key features of FootVerse is its integration with **CJ Dropshipping**, allowing the platform to display live products instead of relying on manually entered inventory.
 
-### Product Synchronization Flow
+#### Product Synchronization Flow
 
 ```text
 CJ Dropshipping
@@ -254,7 +252,7 @@ Store in MongoDB
 Display on Frontend
 ```
 
-### Features
+#### Features
 
 * Live product sourcing
 * Automatic product synchronization
@@ -265,7 +263,7 @@ Display on Frontend
 * Product pool generation
 * Reduced duplicate products
 
-### Benefits
+#### Benefits
 
 * No manual inventory management
 * Always updated product catalog
@@ -275,11 +273,11 @@ Display on Frontend
 
 ---
 
-# ⚡ Redis Caching
+## ⚡ Redis Caching
 
 Redis is used to reduce unnecessary API calls and database queries by storing frequently accessed data in memory.
 
-### Cached Data
+#### Cached Data
 
 * Product Pool
 * Product Categories
@@ -287,7 +285,7 @@ Redis is used to reduce unnecessary API calls and database queries by storing fr
 * Product Details
 * Search Results
 
-### Cache Flow
+#### Cache Flow
 
 ```text
 User Request
@@ -309,7 +307,7 @@ Data         │
       Return Response
 ```
 
-### Advantages
+#### Advantages
 
 * Faster API responses
 * Reduced MongoDB load
@@ -319,11 +317,11 @@ Data         │
 
 ---
 
-# Authentication Flow
+## Authentication Flow
 
 FootVerse uses **JWT (JSON Web Token)** for secure authentication along with **OTP email verification** for user registration.
 
-### Registration Process
+#### Registration Process
 
 ```text
 User Registration
@@ -344,7 +342,7 @@ Account Created
 JWT Token Generated
 ```
 
-### Login Process
+#### Login Process
 
 ```text
 User Login
@@ -359,7 +357,7 @@ Generate JWT
 Protected Routes
 ```
 
-### Security Features
+#### Security Features
 
 * Password Encryption using bcrypt
 * JWT Authentication
@@ -370,7 +368,7 @@ Protected Routes
 
 ---
 
-# Payment Flow
+## Payment Flow
 
 Stripe is integrated to provide secure and reliable online payments.
 
@@ -400,7 +398,7 @@ Sync with CJ
 Confirmation Email
 ```
 
-### Payment Features
+#### Payment Features
 
 * Secure payment processing
 * Order verification
@@ -409,11 +407,11 @@ Confirmation Email
 
 ---
 
-# Database Overview
+## Database Overview
 
 MongoDB stores all application data in separate collections for better organization.
 
-### Main Collections
+#### Main Collections
 
 * Users
 * Products
@@ -428,7 +426,7 @@ Each collection is linked through unique identifiers, ensuring efficient queryin
 
 ---
 
-# Application Workflow
+## Application Workflow
 
 The following diagram shows how different components interact when a user accesses the platform.
 
@@ -464,7 +462,7 @@ Response Returned to User
 
 ---
 
-# Performance Optimizations
+## Performance Optimizations
 
 To improve speed and scalability, FootVerse includes several optimization techniques:
 
@@ -478,7 +476,7 @@ To improve speed and scalability, FootVerse includes several optimization techni
 
 ---
 
-# Security Measures
+## Security Measures
 
 FootVerse follows industry-standard security practices to protect user data.
 
@@ -492,9 +490,6 @@ FootVerse follows industry-standard security practices to protect user data.
 * Error handling and API validation
 
 ---
-
-➡️ **Part 3 includes the project folder structure, installation guide, environment variables, deployment on Vercel and Render, future improvements, author information, and license.**
-# Project Structure
 
 The project follows a clean and modular folder structure by separating the frontend and backend into independent applications.
 
@@ -529,7 +524,7 @@ FootVerse/
 └── .gitignore
 ```
 
-### Folder Description
+#### Folder Description
 
 | Folder           | Description                                                |
 | ---------------- | ---------------------------------------------------------- |
@@ -546,9 +541,9 @@ FootVerse/
 
 ---
 
-# Getting Started
+## Getting Started
 
-## Prerequisites
+### Prerequisites
 
 Before running the project, make sure the following software is installed:
 
@@ -569,9 +564,9 @@ You will also need accounts for:
 
 ---
 
-# Installation
+## Installation
 
-## 1. Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/PrachiSirola/FootVerse.git
@@ -581,7 +576,7 @@ cd FootVerse
 
 ---
 
-## 2. Install Backend Dependencies
+### 2. Install Backend Dependencies
 
 ```bash
 cd backend
@@ -591,7 +586,7 @@ npm install
 
 ---
 
-## 3. Install Frontend Dependencies
+### 3. Install Frontend Dependencies
 
 ```bash
 cd ../frontend
@@ -601,7 +596,7 @@ npm install
 
 ---
 
-# Environment Variables
+## Environment Variables
 
 Create a `.env` file inside the **backend** directory and add the following variables.
 
@@ -630,9 +625,9 @@ SERVER_URL=http://localhost:5000
 
 ---
 
-# Running the Project
+## Running the Project
 
-## Step 1: Start MongoDB
+### Step 1: Start MongoDB
 
 ```bash
 mongod
@@ -640,7 +635,7 @@ mongod
 
 ---
 
-## Step 2: Start Redis
+### Step 2: Start Redis
 
 ```bash
 redis-server
@@ -648,7 +643,7 @@ redis-server
 
 ---
 
-## Step 3: Start Backend
+### Step 3: Start Backend
 
 ```bash
 cd backend
@@ -664,7 +659,7 @@ http://localhost:5000
 
 ---
 
-## Step 4: Start Frontend
+### Step 4: Start Frontend
 
 ```bash
 cd frontend
@@ -680,18 +675,18 @@ http://localhost:3000
 
 ---
 
-# Deployment
+## Deployment
 
 The project is designed for independent frontend and backend deployment.
 
-## Frontend
+### Frontend
 
 * Platform: **Vercel**
 * Connect GitHub repository
 * Configure environment variables
 * Deploy
 
-## Backend
+### Backend
 
 * Platform: **Render**
 * Connect GitHub repository
