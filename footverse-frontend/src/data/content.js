@@ -11,6 +11,6 @@ export const FAQS = [
   { q: "Are all products genuine?", a: "Yes — FootVerse sources exclusively from authorised brand distributors. Every pair ships with original brand packaging and warranty where applicable." },
   { q: "Do you offer Cash on Delivery?", a: "COD is available on most orders. You can verify COD availability at checkout." },
   { q: "Can I cancel or modify my order?", a: "Orders can be cancelled from the Orders page until they are shipped. To change the address or size after placing an order, contact support within 12 hours." },
-  { q: "How do I care for my shoes?", a: "Check our Shoe Care accessories for cleaning kits. As a rule: keep leather away from direct heat, air out sports shoes after use, and use a shoe tree for formal pairs." },
+  { q: "How do I care for my shoes?", a: "As a rule: keep leather away from direct heat, air out sports shoes after use, and use a shoe tree for formal pairs." },
   { q: "Do you ship internationally?", a: "Currently we deliver only within India. International shipping is on our roadmap — subscribe to the newsletter to be the first to know." },
 ];

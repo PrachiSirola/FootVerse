@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Spinner from "@/components/ui/Spinner";
 import api from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -38,20 +39,21 @@ export default function Listing() {
       try {
         setLoading(true);
 
-        const res = await api.get("/products", {
-          params: {
-            category: criteria.category
-              ? criteria.category.charAt(0).toUpperCase() +
-                criteria.category.slice(1)
-              : undefined,
+        const params = {
+          category: criteria.category
+            ? criteria.category.charAt(0).toUpperCase() + criteria.category.slice(1)
+            : undefined,
+          sub: criteria.sub || undefined,
+          q: criteria.q || undefined,
+        };
 
-            sub: criteria.sub || undefined,
+        const res = await api.get("/products", { params });
 
-            q: criteria.q || undefined,
-          },
-        });
+        // Backend may return an array OR { items: [...] } — handle both.
+        let data = Array.isArray(res.data) ? res.data : res.data.items || [];
 
-        let data = res.data;
+        // TEMP DEBUG — remove once confirmed working. Shows in the browser console.
+        console.log("[FootVerse] GET /products", params, "→", data.length, "items");
 
         switch (criteria.sort) {
           case "price-asc":
@@ -142,9 +144,7 @@ export default function Listing() {
         {/* Grid */}
         <div className="min-w-0 flex-1">
           {loading ? (
-            <div className="py-20 text-center">
-              Loading products...
-            </div>
+            <Spinner label="Loading products…" />
           ) : items.length === 0 ? (
             <div className="rounded-2xl bg-white p-14 text-center shadow-sm">
               <p className="font-playfair text-2xl font-bold text-[#33231A]">No products found</p>

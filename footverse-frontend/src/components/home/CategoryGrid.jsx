@@ -6,7 +6,7 @@ import { CATEGORIES } from "@/data/categories";
 import { PRODUCTS } from "@/data/products";
 import SectionHeading from "./SectionHeading";
 
-const INITIALS = { men: "M", women: "W", kids: "K", sports: "S", comfort: "C", accessories: "A" };
+const INITIALS = { men: "M", women: "W", kids: "K", sports: "S" };
 
 export default function CategoryGrid() {
   return (

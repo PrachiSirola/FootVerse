@@ -8,7 +8,8 @@ import api from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
-import { inr } from "@/lib/format";
+import { priceLabel, isPriceless } from "@/lib/format";
+import Spinner from "@/components/ui/Spinner";
 
 const FALLBACK = "/products/placeholder.svg";
 
@@ -101,7 +102,7 @@ export default function DbProductDetail({ id }) {
   };
 
   if (loading) {
-    return <div className="mx-auto max-w-2xl px-6 py-24 text-center text-[#6E655C]">Loading product…</div>;
+    return <Spinner fullPage label="Loading product…" />;
   }
 
   if (error || !product) {
@@ -198,35 +199,14 @@ export default function DbProductDetail({ id }) {
 
           {/* Price */}
           <div className="mt-5 flex flex-wrap items-baseline gap-3">
-            <span className="text-[34px] font-bold tracking-tight text-[#33231A]">{inr(price)}</span>
-            {discount > 0 && (
+            <span className={`text-[34px] font-bold tracking-tight ${isPriceless(price) ? "text-[#A5793A]" : "text-[#33231A]"}`}>{priceLabel(price)}</span>
+            {!isPriceless(price) && discount > 0 && (
               <>
-                <span className="text-lg text-[#6E655C] line-through">{inr(compare)}</span>
+                <span className="text-lg text-[#6E655C] line-through">{priceLabel(compare)}</span>
                 <span className="rounded-full bg-[#A5793A]/10 px-2.5 py-0.5 text-[12px] font-semibold text-[#A5793A]">{discount}% off</span>
               </>
             )}
           </div>
-
-          {/* Color — only if variants have colors */}
-          {colors.length > 0 && (
-            <div className="mt-6">
-              <p className="text-[12px] font-bold uppercase tracking-[0.06em] text-[#33231A]">
-                Color <span className="ml-1 font-normal normal-case text-[#6E655C]">• {color}</span>
-              </p>
-              <div className="mt-2.5 flex flex-wrap gap-2.5">
-                {colors.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    className={`rounded-lg border-2 px-4 py-2 text-[13px] font-medium transition-colors ${color === c ? "border-[#33231A] bg-[#33231A] text-white" : "border-[#33231A]/15 text-[#33231A] hover:border-[#A5793A]"}`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Size — only if variants have sizes */}
           {sizes.length > 0 && (
@@ -258,20 +238,28 @@ export default function DbProductDetail({ id }) {
 
           {/* Actions */}
           <div className="mt-5 flex items-stretch gap-3">
-            <button
-              type="button"
-              onClick={buyNow}
-              className="flex-1 rounded-xl bg-[#33231A] py-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_14px_30px_-14px_rgba(51,35,26,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#4A3526]"
-            >
-              Buy Now
-            </button>
-            <button
-              type="button"
-              onClick={() => addToCart(true)}
-              className="flex-1 rounded-xl border-2 border-[#33231A] py-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#33231A] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#A5793A] hover:text-[#A5793A]"
-            >
-              Add To Cart
-            </button>
+            {!isPriceless(price) ? (
+              <>
+                <button
+                  type="button"
+                  onClick={buyNow}
+                  className="flex-1 rounded-xl bg-[#33231A] py-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_14px_30px_-14px_rgba(51,35,26,0.55)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#4A3526]"
+                >
+                  Buy Now
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addToCart(true)}
+                  className="flex-1 rounded-xl border-2 border-[#33231A] py-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#33231A] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#A5793A] hover:text-[#A5793A]"
+                >
+                  Add To Cart
+                </button>
+              </>
+            ) : (
+              <div className="flex-1 rounded-xl border-2 border-dashed border-[#A5793A]/40 bg-[#A5793A]/5 py-4 text-center text-[13px] font-semibold uppercase tracking-[0.08em] text-[#A5793A]">
+                Price on Request
+              </div>
+            )}
             <button
               type="button"
               onClick={() =>

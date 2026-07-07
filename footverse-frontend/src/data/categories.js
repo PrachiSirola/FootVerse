@@ -3,8 +3,6 @@ export const CATEGORIES = [
   { slug: "women", name: "Women", subs: ["Sneakers","Flats","Heels","Casual","Formal","Boots","Sandals","Loafers","Slippers"] },
   { slug: "kids", name: "Kids", subs: ["School Shoes","Sneakers","Sports","Sandals","Boots"] },
   { slug: "sports", name: "Sports & Outdoor", subs: ["Running","Training","Football","Cricket","Basketball","Hiking","Trekking"] },
-  { slug: "comfort", name: "Comfort & Safety", subs: ["Orthopedic","Safety Shoes","Work Boots"] },
-  { slug: "accessories", name: "Accessories", subs: ["Socks","Insoles","Shoe Care","Shoe Laces"] },
 ];
 
 export const BRANDS = ["Nike","Adidas","Puma","Reebok","New Balance","Skechers","Woodland","Bata","Campus","Asics"];

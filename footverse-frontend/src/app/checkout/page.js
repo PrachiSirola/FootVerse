@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Spinner from "@/components/ui/Spinner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -118,6 +119,12 @@ export default function CheckoutPage() {
         <Link href="/products" className="mt-4 inline-block text-[#A5793A] hover:underline">Back to Shop</Link>
       </div>
     );
+  }
+
+  // While auth is resolving, or a guest is being redirected, show a spinner
+  // instead of flashing the checkout form.
+  if (!ready || !user) {
+    return <Spinner fullPage label="Loading checkout…" />;
   }
 
   return (

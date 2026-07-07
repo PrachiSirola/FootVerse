@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Spinner from "@/components/ui/Spinner";
+import { priceLabel } from "@/lib/format";
 
 export default function SearchDropdown({
 
@@ -28,13 +30,7 @@ export default function SearchDropdown({
     >
 
       {loading && (
-
-        <div className="p-5">
-
-          Searching...
-
-        </div>
-
+        <div className="p-5"><Spinner size={24} label="Searching…" /></div>
       )}
 
       {!loading && products.length === 0 && (
@@ -92,7 +88,7 @@ export default function SearchDropdown({
 
               <p className="text-sm text-gray-500">
 
-                ${Number(product.price).toFixed(2)}
+                {priceLabel(product.price)}
 
               </p>
 

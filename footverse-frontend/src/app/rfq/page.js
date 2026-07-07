@@ -52,7 +52,6 @@ export default function RFQPage() {
                 <option value="desks">Desks</option>
                 <option value="chairs">Chairs</option>
                 <option value="storage">Storage</option>
-                <option value="accessories">Accessories</option>
                 <option value="mixed">Mixed / Multiple</option>
               </select>
             </div>

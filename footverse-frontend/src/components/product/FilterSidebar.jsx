@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
-import { CATEGORIES as STATIC_CATEGORIES, BRANDS, COLOR_HEX } from "@/data/categories";
+import { CATEGORIES as STATIC_CATEGORIES } from "@/data/categories";
 
-const RATINGS = [4, 3];
-const DISCOUNTS = [10, 25, 40];
 const SIZE_CHIPS = ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11", "UK 3", "UK 4", "UK 5", "Free Size"];
 
 function Section({ title, children }) {
@@ -70,9 +68,7 @@ export default function FilterSidebar() {
 
   const activeCat = sp.get("category") || "";
   const cat = categories.find((c) => c.slug === activeCat);
-  const brands = (sp.get("brand") || "").split(",").filter(Boolean);
   const sizes = (sp.get("size") || "").split(",").filter(Boolean);
-  const colors = (sp.get("color") || "").split(",").filter(Boolean);
 
   return (
     <aside className="w-full">
@@ -120,25 +116,6 @@ export default function FilterSidebar() {
         </ul>
       </Section>
 
-      <Section title="Brand">
-        <ul className="space-y-2">
-          {BRANDS.map((b) => (
-            <li key={b} className="flex items-center gap-2.5">
-              <input
-                id={`brand-${b}`}
-                type="checkbox"
-                checked={brands.includes(b)}
-                onChange={() => toggleInList("brand", b)}
-                className="h-4 w-4 accent-[#A5793A]"
-              />
-              <label htmlFor={`brand-${b}`} className="cursor-pointer text-[13.5px] text-[#33231A]">
-                {b}
-              </label>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
       <Section title="Price">
         <div className="flex items-center gap-2">
           <input
@@ -158,7 +135,7 @@ export default function FilterSidebar() {
           />
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          {[[0, 1999], [2000, 4999], [5000, 9999], [10000, 0]].map(([lo, hi]) => (
+          {[[0, 99], [100, 199], [200, 299], [300, 499], [500, 0]].map(([lo, hi]) => (
             <button
               key={`${lo}-${hi}`}
               type="button"
@@ -186,63 +163,6 @@ export default function FilterSidebar() {
         </div>
       </Section>
 
-      <Section title="Color">
-        <div className="flex flex-wrap gap-2.5">
-          {Object.entries(COLOR_HEX).map(([name, hex]) => (
-            <button
-              key={name}
-              type="button"
-              title={name}
-              aria-label={`Filter by ${name}`}
-              onClick={() => toggleInList("color", name)}
-              className={`h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 ${colors.includes(name) ? "border-[#A5793A] ring-2 ring-[#A5793A]/30" : "border-white shadow"}`}
-              style={{ backgroundColor: hex }}
-            />
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Rating">
-        <div className="space-y-2">
-          {RATINGS.map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => set("rating", Number(sp.get("rating")) === r ? "" : String(r))}
-              className={`block text-[13.5px] transition-colors ${Number(sp.get("rating")) === r ? "font-semibold text-[#A5793A]" : "text-[#33231A] hover:text-[#A5793A]"}`}
-            >
-              {r}★ &amp; above
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Discount">
-        <div className="space-y-2">
-          {DISCOUNTS.map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => set("discount", Number(sp.get("discount")) === d ? "" : String(d))}
-              className={`block text-[13.5px] transition-colors ${Number(sp.get("discount")) === d ? "font-semibold text-[#A5793A]" : "text-[#33231A] hover:text-[#A5793A]"}`}
-            >
-              {d}% or more
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Availability">
-        <label className="flex cursor-pointer items-center gap-2.5 text-[13.5px] text-[#33231A]">
-          <input
-            type="checkbox"
-            checked={sp.get("stock") === "1"}
-            onChange={(e) => set("stock", e.target.checked ? "1" : "")}
-            className="h-4 w-4 accent-[#A5793A]"
-          />
-          In stock only
-        </label>
-      </Section>
     </aside>
   );
 }

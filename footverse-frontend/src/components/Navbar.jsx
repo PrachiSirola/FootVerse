@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { priceLabel } from "@/lib/format";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MegaMenu from "./MegaMenu";
@@ -224,7 +225,7 @@ export default function Navbar() {
                               <span className="block truncate font-medium text-[#33231A]">{p.name}</span>
                               <span className="text-xs text-[#6E655C]">{p.categoryName} · {p.subcategory}</span>
                             </span>
-                            <span className="shrink-0 font-semibold text-[#33231A]">${Number(p.price).toFixed(2)}</span>
+                            <span className="shrink-0 font-semibold text-[#33231A]">{priceLabel(p.price)}</span>
                           </Link>
                         </li>
                       ))}
