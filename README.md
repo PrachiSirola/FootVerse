@@ -12,7 +12,7 @@
 
 ---
 
-# 📖 Project Overview
+# Project Overview
 
 FootVerse is a full-stack footwear e-commerce platform developed as a major academic project to demonstrate modern software engineering practices and real-world e-commerce architecture.
 
@@ -24,7 +24,7 @@ The project follows a modular architecture with separate frontend and backend se
 
 ---
 
-# 🎯 Project Objectives
+# Project Objectives
 
 The main objectives of FootVerse are:
 
@@ -38,7 +38,7 @@ The main objectives of FootVerse are:
 
 ---
 
-# ✨ Features
+# Features
 
 ## User Authentication
 
