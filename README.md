@@ -24,7 +24,7 @@ The project follows a modular architecture with separate frontend and backend se
 
 ---
 
-# Project Objectives
+## Project Objectives
 
 The main objectives of FootVerse are:
 
