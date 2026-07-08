@@ -39,3 +39,42 @@ export async function getOrder(id) {
   const r = await api.get(`/orders/${id}`);
   return r.data.order;
 }
+
+/** Cancel an order with a reason. */
+export async function cancelOrder(orderId, reason) {
+  const { data } = await api.post(`/orders/${orderId}/cancel`, { reason });
+  return data;
+}
+
+/** Submit a return request (Delivered orders). */
+export async function requestReturn(orderId, payload) {
+  const { data } = await api.post(`/orders/${orderId}/return`, payload);
+  return data;
+}
+
+/* ---- Admin ---- */
+export async function adminListReturns() {
+  const { data } = await api.get("/orders/admin/returns");
+  return data.orders || [];
+}
+export async function adminResolveReturn(orderId, decision, adminNote) {
+  const { data } = await api.post(`/orders/admin/${orderId}/resolve-return`, { decision, adminNote });
+  return data;
+}
+export async function adminMarkRefunded(orderId, note) {
+  const { data } = await api.post(`/orders/admin/${orderId}/refunded`, { note });
+  return data;
+}
+
+export async function adminUpdateStatus(orderId, status, note) {
+  const { data } = await api.post(`/orders/admin/${orderId}/status`, { status, note });
+  return data;
+}
+export async function adminReconcileReport() {
+  const { data } = await api.get("/orders/admin/reconcile/report");
+  return data;
+}
+export async function adminReconcileRun() {
+  const { data } = await api.post("/orders/admin/reconcile/run");
+  return data;
+}
