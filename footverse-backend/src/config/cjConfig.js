@@ -25,6 +25,7 @@ PRODUCT: {
 
   ORDER: {
     CREATE: "/shopping/order/createOrderV2",
+    DELETE: "/shopping/order/deleteOrder",
     LIST: "/shopping/order/list",
   },
 

@@ -27,6 +27,7 @@ const UserSchema = new mongoose.Schema(
     addresses: [AddressSchema],
 
     isVerified: { type: Boolean, default: false },
+    isAdmin: { type: Boolean, default: false },
     resetTokenHash: { type: String, default: null },
     resetTokenExpires: { type: Date, default: null },
   },

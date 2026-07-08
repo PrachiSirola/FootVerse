@@ -140,13 +140,64 @@ const OrderSchema = new mongoose.Schema(
       enum: [
         "Pending",
         "Confirmed",
+        "Processing",
         "Packed",
         "Shipped",
         "Delivered",
         "Cancelled",
+        "Returned",
       ],
       default: "Confirmed",
     },
+
+    // ---- Cancellation ----
+    cancellation: {
+      reason: { type: String, default: null },
+      cancelledAt: { type: Date, default: null },
+      cancelledBy: { type: String, enum: ["user", "admin", null], default: null },
+    },
+
+    // ---- Return request ----
+    returnRequest: {
+      status: {
+        type: String,
+        enum: ["None", "Requested", "Approved", "Rejected"],
+        default: "None",
+      },
+      reason: { type: String, default: null },
+      comments: { type: String, default: null },
+      // COD refunds need bank/UPI details from the customer
+      bankDetails: {
+        accountName: { type: String, default: null },
+        accountNumber: { type: String, default: null },
+        ifsc: { type: String, default: null },
+        upiId: { type: String, default: null },
+      },
+      requestedAt: { type: Date, default: null },
+      resolvedAt: { type: Date, default: null },
+      adminNote: { type: String, default: null },
+    },
+
+    // ---- Refund tracking ----
+    refund: {
+      status: {
+        type: String,
+        enum: ["None", "Pending", "Processing", "Refunded"],
+        default: "None",
+      },
+      method: { type: String, default: null }, // "Original Payment" | "Bank Transfer" | "UPI"
+      amount: { type: Number, default: 0 },
+      processedAt: { type: Date, default: null },
+    },
+
+    // ---- Status timeline (append-only log of every change) ----
+    timeline: [
+      {
+        status: String,
+        note: String,
+        at: { type: Date, default: Date.now },
+      },
+    ],
 
     // ---- CJ Dropshipping sync ----
     cjOrderId: { type: String, default: null },

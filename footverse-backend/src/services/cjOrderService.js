@@ -14,6 +14,78 @@ import Order from "../models/Order.js";
 
 // Minimal India country code for CJ (adjust if you ship elsewhere).
 const DEFAULT_COUNTRY = "IN";
+const FALLBACK_LOGISTICS = "CJPacket Ordinary";
+
+/** Common country name → ISO-2 code (CJ wants the code). Falls back to IN. */
+const COUNTRY_CODES = {
+  india: "IN", "united states": "US", usa: "US", us: "US", uk: "GB",
+  "united kingdom": "GB", canada: "CA", australia: "AU", germany: "DE",
+  france: "FR", italy: "IT", spain: "ES", netherlands: "NL", "united arab emirates": "AE",
+  uae: "AE", singapore: "SG", malaysia: "MY", "new zealand": "NZ", japan: "JP",
+  "saudi arabia": "SA", "south africa": "ZA", brazil: "BR", mexico: "MX",
+};
+function countryCode(name) {
+  if (!name) return DEFAULT_COUNTRY;
+  const key = String(name).trim().toLowerCase();
+  return COUNTRY_CODES[key] || (name.length === 2 ? name.toUpperCase() : DEFAULT_COUNTRY);
+}
+
+/**
+ * Ask CJ which logistics options are valid for this destination + products, and
+ * return the CHEAPEST valid one's name. Falls back to a default if the call
+ * fails, so an order never gets blocked purely on shipping lookup.
+ */
+async function pickCheapestLogistics({ countryCode, products, zip }) {
+  if (!CJ_CONFIG.SHIPPING.CALCULATE) {
+    console.warn("[cj order] freight endpoint missing in cjConfig (ORDER.CALCULATE undefined) — using fallback logistics");
+    return null;
+  }
+  try {
+    const body = {
+      startCountryCode: "CN",
+      endCountryCode: countryCode,
+      zip: zip || "",
+      products: products.map((p) => ({
+        quantity: p.quantity,
+        vid: p.vid,
+      })),
+    };
+    const res = await cjGetPost(CJ_CONFIG.SHIPPING.CALCULATE, body);
+    const options = Array.isArray(res) ? res : res?.data || res?.freightList || [];
+    if (!options.length) return null;
+    // each option ~ { logisticName, logisticPrice/logisticAmount, ... }
+    const priced = options
+      .map((o) => ({
+        name: o.logisticName || o.logisticServiceName || o.name,
+        price: Number(o.logisticPrice ?? o.logisticAmount ?? o.freight ?? 0),
+      }))
+      .filter((o) => o.name);
+    if (!priced.length) return null;
+    priced.sort((a, b) => a.price - b.price);
+    console.log(`[cj order] freight options: ${priced.map((p) => `${p.name}($${p.price})`).join(", ")}`);
+    return priced[0].name;
+  } catch (err) {
+    console.warn(`[cj order] freight calculate failed: ${err.message} — using fallback logistics`);
+    return null;
+  }
+}
+
+/** POST helper with the same rate-limit backoff as cjGetWithRetry. */
+async function cjGetPost(endpoint, body, tries = 3) {
+  let lastErr;
+  for (let a = 1; a <= tries; a++) {
+    try {
+      return await apiClient.post(endpoint, body);
+    } catch (err) {
+      lastErr = err;
+      const rl = /too many requests|qps limit|frequently/i.test(err.message || "");
+      if (!rl || a === tries) throw err;
+      await new Promise((r) => setTimeout(r, 1200 * a));
+    }
+  }
+  throw lastErr;
+}
+
 
 /** A legacy MongoDB _id is 24 hex chars; CJ product ids are long numeric strings. */
 function isLegacyMongoId(id) {
@@ -100,12 +172,22 @@ async function buildCjPayload(order) {
   }
 
   const c = order.customer || {};
+  const cc = countryCode(c.country);
 
-  // Basic order + customer + shipping info (per your spec). Size/color are NOT
-  // sent — CJ uses the default variant chosen above.
+  // Ask CJ for a valid, cheapest logistics option for this destination.
+  const cheapest = await pickCheapestLogistics({
+    countryCode: cc,
+    products,
+    zip: c.pin || "",
+  });
+  const logisticName = cheapest || FALLBACK_LOGISTICS;
+  console.log(`[cj order] logistics for ${cc}: ${logisticName}${cheapest ? "" : " (fallback)"}`);
+
+  // Basic order + customer + shipping info. Size/color are NOT sent — CJ uses
+  // the default variant chosen above.
   return {
-    orderNumber: order.orderNumber,                       // your order id/reference
-    shippingCountryCode: DEFAULT_COUNTRY,
+    orderNumber: order.orderNumber,
+    shippingCountryCode: cc,
     shippingCountry: c.country || "India",
     shippingProvince: c.state || "",
     shippingCity: c.city || "",
@@ -113,12 +195,11 @@ async function buildCjPayload(order) {
     shippingCustomerName: c.name || "",
     shippingPhone: c.phone || "",
     shippingZip: c.pin || "",
-    email: c.email || "",                                 // basic user detail
-    // payment method + amount paid, surfaced in the CJ remark for reference
-    remark: `FootVerse ${order.orderNumber} | ${order.paymentMethod || "N/A"} | Paid: ${order.currency || "INR"} ${order.grandTotal ?? ""}`,
+    email: c.email || "",
+    remark: `FootVerse ${order.orderNumber} | ${order.paymentMethod || "N/A"} | Paid: ${order.currency || "USD"} ${order.grandTotal ?? ""}`,
     fromCountryCode: "CN",
-    logisticName: "CJPacket Ordinary",
-    products,                                             // [{ vid, variantSku, quantity }]
+    logisticName,
+    products,
   };
 }
 
@@ -205,4 +286,29 @@ export async function retryFailedCjSyncs() {
     results.push({ orderNumber: o.orderNumber, ...(await syncOrderToCJ(o._id)) });
   }
   return results;
+}
+
+/**
+ * Cancel an order at CJ (used when a user cancels a synced order).
+ * CJ's deleteOrder cancels an unshipped order. Safe: never throws to caller.
+ */
+export async function cancelOrderAtCJ(order) {
+  // Legacy pre-CJ orders never synced — nothing to cancel at CJ.
+  const isLegacy = (order?.items || []).every((i) => isLegacyMongoId(i.productId));
+  if (isLegacy) {
+    console.log(`[cj order] cancel skipped for ${order.orderNumber} (legacy pre-CJ order)`);
+    return { ok: false, skipped: true, reason: "legacy order" };
+  }
+  if (!order?.cjOrderId) return { ok: false, skipped: true, reason: "no CJ order id" };
+  try {
+    await apiClient.post(CJ_CONFIG.ORDER.DELETE, { orderId: order.cjOrderId });
+    order.cjSyncStatus = "CJ Sync Skipped";
+    order.cjSyncError = "Order cancelled at CJ by user request.";
+    await order.save();
+    console.log(`[cj order] cancelled at CJ: ${order.orderNumber} (${order.cjOrderId})`);
+    return { ok: true };
+  } catch (err) {
+    console.warn(`[cj order] CJ cancel failed for ${order.orderNumber}: ${err.message}`);
+    return { ok: false, error: err.message };
+  }
 }

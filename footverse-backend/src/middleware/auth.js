@@ -35,3 +35,20 @@ export function authRequired(req, res, next) {
   req.uid = uid;
   next();
 }
+
+/** Requires a valid token AND that the user has isAdmin=true. */
+export async function adminRequired(req, res, next) {
+  const uid = readToken(req);
+  if (!uid) return res.status(401).json({ message: "Authentication required." });
+  try {
+    const { default: User } = await import("../models/User.js");
+    const user = await User.findById(uid).select("isAdmin");
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ message: "Admin access required." });
+    }
+    req.uid = uid;
+    next();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
