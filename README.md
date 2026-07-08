@@ -308,7 +308,7 @@ Data         │
              │
              ▼
       Return Response
-
+```
 ---
 
 ## Authentication Flow
