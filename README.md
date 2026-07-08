@@ -246,9 +246,6 @@ Filter & Format Products
 Store in Redis Cache
       │
       ▼
-Store in MongoDB
-      │
-      ▼
 Display on Frontend
 ```
 
@@ -298,22 +295,19 @@ Check Redis Cache
 Hit       Miss
  │         │
  ▼         ▼
-Return   Fetch from MongoDB
+Return    CJ API
 Data         │
+             ▼
+     Receive Raw Data
+             │
+             ▼
+ Transform into Footverse format
+             │
              ▼
       Update Redis Cache
              │
              ▼
       Return Response
-```
-
-#### Advantages
-
-* Faster API responses
-* Reduced MongoDB load
-* Reduced CJ API requests
-* Better user experience
-* Improved scalability
 
 ---
 
