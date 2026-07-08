@@ -14,11 +14,33 @@ const app = express();
 
 // JWT lives in localStorage and is sent as a Bearer header, so we don't need
 // cookie credentials — a permissive CORS origin is fine for local dev.
-const origins = (process.env.CLIENT_ORIGIN || "http://localhost:3000,http://localhost:3001,http://localhost:3002")
+const allowList = (process.env.CLIENT_ORIGIN || "http://localhost:3000,http://localhost:3001,http://localhost:3002")
   .split(",")
-  .map((s) => s.trim());
+  .map((s) => s.trim())
+  .filter(Boolean);
 
-app.use(cors({ origin: origins }));
+// Allow: explicit CLIENT_ORIGIN entries, any localhost, and any Vercel URL for
+// this project (production domain + every per-deployment preview URL, which
+// change on each deploy). This prevents CORS breaking when Vercel serves the
+// site from a deployment-specific *.vercel.app host.
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // non-browser clients (curl, server-to-server)
+  if (allowList.includes(origin)) return true;
+  if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
+  // any Vercel subdomain (foot-verse-*.vercel.app, previews, etc.)
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return true;
+  return false;
+}
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      console.warn(`[cors] blocked origin: ${origin}`);
+      return callback(null, false);
+    },
+  })
+);
 app.use(express.json({ limit: "5mb" }));
 
 /* ===========================
