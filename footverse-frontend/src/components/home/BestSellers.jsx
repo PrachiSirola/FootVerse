@@ -22,11 +22,26 @@ export default function BestSellers() {
 
         let picks = all.filter((p) => p.bestseller);
         if (picks.length < 8) {
-          const rated = [...all].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+          // CJ products have no real ratings (all 0), so instead of a meaningless
+          // rating sort (which returns one clustered category), spread the picks
+          // across different categories/subcategories for a varied showcase.
           const seen = new Set(picks.map((p) => p._id));
-          for (const p of rated) {
-            if (picks.length >= 8) break;
-            if (!seen.has(p._id)) { picks.push(p); seen.add(p._id); }
+          const byGroup = new Map();
+          for (const p of all) {
+            const key = `${p.category}|${p.subcategory}`;
+            if (!byGroup.has(key)) byGroup.set(key, []);
+            byGroup.get(key).push(p);
+          }
+          // Round-robin across groups so no single category dominates.
+          const groups = [...byGroup.values()];
+          let idx = 0;
+          while (picks.length < 8 && groups.some((g) => g.length)) {
+            const g = groups[idx % groups.length];
+            if (g && g.length) {
+              const p = g.shift();
+              if (p && !seen.has(p._id)) { picks.push(p); seen.add(p._id); }
+            }
+            idx++;
           }
         }
         if (alive) setProducts(picks.slice(0, 8));

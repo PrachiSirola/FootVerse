@@ -12,8 +12,24 @@ export default function FeaturedProducts() {
     async function loadProducts() {
       try {
         const res = await api.get("/products");
+        const all = Array.isArray(res.data) ? res.data : res.data.items || [];
 
-        setProducts(res.data.slice(0, 8));
+        // Spread across categories so the row isn't all one type.
+        const byGroup = new Map();
+        for (const p of all) {
+          const key = `${p.category}|${p.subcategory}`;
+          if (!byGroup.has(key)) byGroup.set(key, []);
+          byGroup.get(key).push(p);
+        }
+        const groups = [...byGroup.values()];
+        const picks = [];
+        let idx = 0;
+        while (picks.length < 8 && groups.some((g) => g.length)) {
+          const g = groups[idx % groups.length];
+          if (g && g.length) picks.push(g.shift());
+          idx++;
+        }
+        setProducts(picks.slice(0, 8));
       } catch (err) {
         console.error(err);
       }

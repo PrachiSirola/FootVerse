@@ -8,7 +8,7 @@ import { connectDB } from "./config/db.js";
 import { login } from "./services/cjAuthService.js";
 import { connectRedis } from "./config/redisClient.js";
 import { startCacheRefreshJob } from "./jobs/cacheRefresh.js";
-import { buildPool } from "./services/cjPoolService.js";
+import { startProductSync } from "./services/productSyncService.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -27,8 +27,9 @@ async function startServer() {
     }
 
     // Start Express server
-    // Warm the CJ product pool on boot (non-fatal if CJ is unreachable)
-    buildPool().catch((e) => console.warn("[cj pool] initial warm failed:", e.message));
+    // Start the Mongo⇄CJ product sync scheduler. This warms the pool, seeds
+    // MongoDB (source of truth), and refreshes price/stock/soft-deletes hourly.
+    startProductSync();
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);

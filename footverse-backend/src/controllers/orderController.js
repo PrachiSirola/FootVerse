@@ -192,3 +192,11 @@ export async function adminUpdateStatus(req, res) {
   if (!r.ok) return res.status(r.status || 400).json({ success: false, message: r.message });
   res.json({ success: true, message: r.message, order: r.order });
 }
+
+import { runProductSync } from "../services/productSyncService.js";
+
+/** POST /api/orders/admin/products/sync — manually trigger a CJ→Mongo sync. */
+export async function adminSyncProducts(_req, res) {
+  const r = await runProductSync();
+  res.json({ success: !!r.ok, ...r });
+}

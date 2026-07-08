@@ -10,10 +10,12 @@ import { transformCJLive } from "../transformers/cjLiveTransformer.js";
 import { apiClient } from "../utils/apiClient.js";
 import CJ_CONFIG from "../config/cjConfig.js";
 import { cacheGet, cacheSet, PRODUCT_PREFIX } from "../utils/cache.js";
+import { getAllProducts, getProductById } from "./productRepository.js";
 
 /* ---- LISTING (mirrors old getProducts filter semantics) ---- */
 export const getProducts = async (query = {}) => {
-  let list = await getPool();
+  // Mongo-first (source of truth) → Redis → CJ, handled by the repository.
+  let list = await getAllProducts();
 
   if (query.category) list = list.filter((p) => p.category === query.category);
   if (query.sub) list = list.filter((p) => p.subcategory === query.sub);
@@ -113,9 +115,8 @@ export const getProduct = async (id) => {
   const cached = await cacheGet(key);
   if (cached) return cached;
 
-  // First try the pool (cheap, already tagged with your category/sub).
-  const pool = await getPool();
-  const fromPool = pool.find((p) => String(p._id) === String(id));
+  // Mongo-first (source of truth) → Redis → CJ, via the repository.
+  const fromPool = await getProductById(id);
 
   let product = fromPool || null;
 
@@ -164,7 +165,7 @@ export const getProduct = async (id) => {
 
 /* ---- FACETS (in-memory category→sub tree with counts) ---- */
 export const getFacets = async () => {
-  const pool = await getPool();
+  const pool = await getAllProducts();
   const map = new Map();
   for (const p of pool) {
     const cat = p.category || "Other";
@@ -183,7 +184,7 @@ export const getFacets = async () => {
 
 /* ---- RELATED (same category/sub, in-memory) ---- */
 export const getRelated = async (id, limit = 4) => {
-  const pool = await getPool();
+  const pool = await getAllProducts();
   const base = pool.find((p) => String(p._id) === String(id));
   if (!base) return [];
   return pool
