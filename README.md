@@ -1,134 +1,98 @@
 # FootVerse
 
 > **Your Universe of Footwear**
-> A modern full-stack footwear e-commerce platform that brings together **live product sourcing**, **secure authentication**, **fast performance**, and **seamless online shopping**. Built using **Next.js**, **Express.js**, **MongoDB**, **Redis**, **Stripe**, and **CJ Dropshipping API**.
+> A modern full-stack footwear e-commerce platform that brings together **live product sourcing**, **secure authentication**, **fast performance**, and **seamless online shopping**. Built using **Next.js**, **Express.js**, **MongoDB**, **Redis**, **Stripe**, and the **CJ Dropshipping API**.
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square\&logo=next.js)
-![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square\&logo=react)
-![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=flat-square\&logo=node.js)
-![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=flat-square\&logo=mongodb)
-![Redis](https://img.shields.io/badge/Redis-Cache-DC382D?style=flat-square\&logo=redis)
-![Stripe](https://img.shields.io/badge/Stripe-Payment-635BFF?style=flat-square\&logo=stripe)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=flat-square&logo=node.js)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=flat-square&logo=mongodb)
+![Redis](https://img.shields.io/badge/Redis-Cache-DC382D?style=flat-square&logo=redis)
+![Stripe](https://img.shields.io/badge/Stripe-Payment-635BFF?style=flat-square&logo=stripe)
 
 ---
 
 ## Project Overview
 
-FootVerse is a full-stack footwear e-commerce platform developed as a major academic project to demonstrate modern software engineering practices and real-world e-commerce architecture.
+FootVerse is a full-stack footwear e-commerce platform that demonstrates modern software engineering practices and real-world e-commerce architecture.
 
-Unlike traditional e-commerce websites that manually manage product inventories, FootVerse integrates directly with **CJ Dropshipping** to fetch live product data. Products are synchronized, processed, cached using Redis, stored in MongoDB, and displayed through a responsive Next.js frontend.
+Unlike traditional stores that manually manage inventory, FootVerse integrates directly with **CJ Dropshipping** to source live product data. Products are fetched, transformed into a consistent format, stored in **MongoDB** (the source of truth), cached in **Redis**, and displayed through a responsive **Next.js** frontend.
 
-The platform provides a complete shopping experience, including user authentication, OTP verification, product search, wishlist management, shopping cart, secure payments using Stripe, order management, coupons, and user profiles.
+The platform provides a complete shopping experience: user authentication with OTP verification, product search and filtering, wishlist, shopping cart, secure Stripe payments, Cash-on-Delivery, full order management, order cancellation and returns, and an admin dashboard.
 
-The project follows a modular architecture with separate frontend and backend services, making it scalable, maintainable, and ready for cloud deployment using **Vercel** and **Render**.
+The project follows a modular architecture with separate frontend and backend services, making it scalable, maintainable, and cloud-ready on **Vercel** and **Render**.
 
 ---
 
 ## Project Objectives
 
-The main objectives of FootVerse are:
-
-* Build a modern full-stack e-commerce application.
-* Integrate live products from CJ Dropshipping.
-* Implement secure authentication using JWT and OTP verification.
-* Improve performance using Redis caching.
-* Enable secure online payments using Stripe.
-* Follow scalable backend architecture and clean coding practices.
-* Deploy the application using modern cloud platforms.
+- Build a modern full-stack e-commerce application.
+- Source live products from CJ Dropshipping with MongoDB as the source of truth.
+- Implement secure authentication using JWT and email OTP verification.
+- Improve performance using Redis caching.
+- Enable secure online payments using Stripe, plus Cash on Delivery.
+- Provide complete order management, including cancellation, returns, and refunds.
+- Follow scalable backend architecture and clean coding practices.
+- Deploy using modern cloud platforms.
 
 ---
 
 ## Features
 
 ### User Authentication
-
-* User Registration
-* Secure Login
-* JWT Authentication
-* Email OTP Verification
-* Forgot Password
-* Reset Password
-* Protected Routes
-* Logout Functionality
-
----
+- User registration with email OTP verification
+- Secure login (JWT)
+- Forgot password / reset password
+- Protected routes
+- Logout
 
 ### Product Management
-
-* Live Product Fetching from CJ Dropshipping
-* Product Categories
-* Product Search
-* Advanced Filtering
-* Sorting Options
-* Product Variants
-* Size Selection
-* Product Details
-* Related Products
-
----
+- Live product sourcing from CJ Dropshipping
+- MongoDB-backed catalog (source of truth) with hourly sync
+- Product categories, search, filtering, and sorting
+- Product variants and size selection
+- Product details and related products
+- Automatic soft-delete of products CJ no longer offers
 
 ### Wishlist
-
-* Add Products to Wishlist
-* Remove Products
-* Persistent Wishlist for Logged-in Users
-
----
+- Add/remove products
+- Persistent wishlist for logged-in users
 
 ### Shopping Cart
-
-* Add to Cart
-* Remove from Cart
-* Update Product Quantity
-* Automatic Price Calculation
-* Coupon Support
-
----
+- Add/remove items and update quantity
+- Automatic price calculation
+- Guest cart that merges on login
 
 ### Checkout & Payments
-
-* Secure Stripe Payment Gateway
-* Shipping Information
-* Order Summary
-* Payment Confirmation
-
----
+- Secure Stripe card payments
+- Cash on Delivery (COD)
+- Shipping information and order summary
+- Payment confirmation via redirect and webhook
 
 ### Order Management
+- Place orders (Stripe or COD)
+- Order history and order details
+- Order status lifecycle (Confirmed → Processing → Packed → Shipped → Delivered)
+- CJ Dropshipping order synchronization
+- Order cancellation with reasons and refunds
+- Return requests with admin approval
+- Cancelled-order archive collection
 
-* Place Orders
-* View Order History
-* Order Details
-* Order Tracking
-* CJ Dropshipping Order Synchronization
-
----
-
-## User Profile
-
-* View Profile
-* Edit Personal Information
-* Manage Orders
-* Wishlist
-* Coupons
-* Logout
-
----
+### Admin
+- View and manage returns and cancellations
+- Approve/reject returns, mark refunds complete
+- Advance order fulfillment status
+- Reconcile MongoDB ↔ CJ order consistency
+- Manual product sync
 
 ### Email Services
-
-* OTP Verification Email
-* Password Reset Email
-* Order Confirmation Email
-
----
+- OTP verification email
+- Password reset email
 
 ### Performance Optimization
-
-* Redis Product Caching
-* Faster API Responses
-* Reduced Database Queries
-* Reduced CJ API Requests
+- Redis caching of product responses
+- Faster API responses and fewer CJ API calls
+- MongoDB as primary source, reducing repeated external requests
 
 ---
 
@@ -136,412 +100,321 @@ The main objectives of FootVerse are:
 
 ### Frontend
 
-| Technology               | Why It Was Used                                                                                                                                             |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Next.js (App Router)** | Built the frontend application with server-side rendering, file-based routing, and improved performance for a modern e-commerce experience.                 |
-| **React.js**             | Created reusable UI components and managed the application's user interface efficiently.                                                                    |
-| **JavaScript (ES6+)**    | Implemented the frontend and backend application logic using modern JavaScript features.                                                                    |
-| **Tailwind CSS**         | Designed a responsive, clean, and modern user interface with utility-first CSS classes.                                                                     |
-| **Framer Motion**        | Added premium animations such as hero section transitions, floating shoe animations, smooth page transitions, hover effects, and interactive UI animations. |
-| **Context API**          | Managed global application state such as user authentication, shopping cart, and wishlist without excessive prop drilling.                                  |
-
----
+| Technology | Why It Was Used |
+| --- | --- |
+| **Next.js (App Router)** | Server-side rendering, file-based routing, and strong performance for a modern storefront. |
+| **React.js** | Reusable UI components and efficient interface management. |
+| **JavaScript (ES6+)** | Application logic across frontend and backend. |
+| **Tailwind CSS** | Responsive, clean, utility-first styling. |
+| **Framer Motion** | Hero animations, page transitions, hover effects, and interactive UI. |
+| **Context API** | Global state for auth, cart, and wishlist without prop drilling. |
 
 ### Backend
 
-| Technology               | Why It Was Used                                                                                                                    |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Node.js**              | Provided the JavaScript runtime for building the backend server.                                                                   |
-| **Express.js**           | Built RESTful APIs, handled routing, middleware, authentication, and business logic.                                               |
-| **MongoDB**              | Stored user accounts, products, carts, orders, wishlists, reviews, and other application data.                                     |
-| **Mongoose**             | Simplified MongoDB operations through schemas, models, and data validation.                                                        |
-| **Redis**                | Cached frequently accessed product and category data to improve response time and reduce repeated API requests to CJ Dropshipping. |
-| **JWT (JSON Web Token)** | Implemented secure user authentication and protected API routes.                                                                   |
-| **bcryptjs**             | Encrypted user passwords before storing them in the database for improved security.                                                |
-| **Nodemailer**           | Sent OTP verification emails, password reset emails, and other user notifications.                                                 |
-| **Stripe**               | Integrated secure online payment processing during checkout.                                                                       |
-| **dotenv**               | Managed sensitive environment variables such as API keys, database URLs, JWT secrets, and Stripe credentials.                      |
-| **Express Rate Limit**   | Protected APIs against excessive requests and brute-force attacks.                                                                 |
-| **Helmet**               | Added HTTP security headers to improve application security.                                                                       |
-| **CORS**                 | Allowed secure communication between the frontend and backend running on different origins.                                        |
-| **Morgan**               | Logged HTTP requests during development for easier debugging and monitoring.                                                       |
+| Technology | Why It Was Used |
+| --- | --- |
+| **Node.js** | JavaScript runtime for the backend server. |
+| **Express.js** | RESTful APIs, routing, middleware, and business logic. |
+| **MongoDB** | Stores users, products, carts, orders, wishlists, and more. |
+| **Mongoose** | Schemas, models, and validation for MongoDB. |
+| **Redis** | Caches product responses to cut latency and CJ API calls. |
+| **JWT** | Secure authentication and protected routes. |
+| **bcryptjs** | Password hashing before storage. |
+| **Nodemailer** | OTP and password-reset emails. |
+| **Stripe** | Secure online card payments. |
+| **dotenv** | Manages environment variables. |
+| **Express Rate Limit** | Protects auth/OTP endpoints from abuse. |
+| **CORS** | Secure frontend↔backend communication across origins. |
 
----
+### Third-Party Integrations
 
-### Third-Party APIs & Integrations
-
-| Technology              | Why It Was Used                                                                                                                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **CJ Dropshipping API** | Retrieved live product data, inventory, product variants, shipping information, reviews, categories, sourcing details, tracking information, and order processing directly from CJ Dropshipping. |
-| **Stripe API**          | Processed secure online payments and managed payment confirmation during checkout.                                                                                                               |
-| **SMTP Email Service**  | Delivered OTP verification and password reset emails to users through Nodemailer.                                                                                                                |
-
----
+| Service | Why It Was Used |
+| --- | --- |
+| **CJ Dropshipping API** | Live product data, variants, freight calculation, and order processing. |
+| **Stripe API** | Secure payment processing and confirmation. |
+| **SMTP Email (Gmail)** | Delivers OTP and password-reset emails via Nodemailer. |
 
 ### Development Tools
 
-| Technology  | Why It Was Used                                                                       |
-| ----------- | ------------------------------------------------------------------------------------- |
-| **Git**     | Tracked source code changes and maintained version history throughout development.    |
-| **GitHub**  | Hosted the project repository and managed version control and collaboration.          |
-| **VS Code** | Primary code editor used for frontend and backend development.                        |
-| **Postman** | Tested REST APIs, authentication, payments, and backend endpoints during development. |
-| **npm**     | Managed project dependencies and executed development scripts.                        |
+| Tool | Why It Was Used |
+| --- | --- |
+| **Git / GitHub** | Version control and repository hosting. |
+| **VS Code** | Primary editor. |
+| **Postman** | API testing. |
+| **npm** | Dependency management and scripts. |
 
 ---
 
 ## System Architecture
 
-FootVerse follows a modular client-server architecture where the frontend, backend, database, cache, and third-party services are separated to improve scalability and maintainability.
+FootVerse follows a modular client-server architecture where the frontend, backend, database, cache, and third-party services are separated for scalability and maintainability.
 
-```text
-                        User
-                          │
-                          ▼
-              Next.js Frontend (Vercel)
-                          │
-                    REST API Requests
-                          │
-                          ▼
-             Express.js Backend (Render)
-        ┌──────────────┼──────────────┐
-        │              │              │
-        ▼              ▼              ▼
-    MongoDB         Redis Cache     Stripe
-        │
-        ▼
- CJ Dropshipping API
+```mermaid
+flowchart TD
+    U([User])
+    FE[Next.js Frontend<br/>Vercel]
+    BE[Express Backend<br/>Render]
+    DB[(MongoDB Atlas<br/>source of truth)]
+    R[(Redis<br/>Upstash cache)]
+    CJ[[CJ Dropshipping API]]
+    ST[[Stripe]]
+    ML[[Email / Gmail]]
+
+    U --> FE
+    FE -->|REST /api| BE
+    BE --> DB
+    BE --> R
+    BE --> CJ
+    BE --> ST
+    BE --> ML
+    ST -->|redirect + webhook| FE
 ```
 
-#### Architecture Overview
-
-* **Frontend:** Handles user interface, product browsing, authentication, cart, wishlist, and checkout.
-* **Backend:** Processes API requests, authentication, business logic, payment handling, and communication with external services.
-* **MongoDB:** Stores users, products, orders, coupons, and other application data.
-* **Redis:** Caches frequently accessed product data to improve performance.
-* **CJ Dropshipping:** Provides live product information and order synchronization.
-* **Stripe:** Processes secure online payments.
+- **Frontend:** UI, product browsing, authentication, cart, wishlist, checkout.
+- **Backend:** API requests, authentication, business logic, payments, external services.
+- **MongoDB:** Source of truth for users, products, orders, and more.
+- **Redis:** Caches frequently accessed product data.
+- **CJ Dropshipping:** Live product data and order synchronization.
+- **Stripe:** Secure online payments.
 
 ---
 
-## CJ Dropshipping Integration
+## Product Data Flow (MongoDB → Redis → CJ)
 
-One of the key features of FootVerse is its integration with **CJ Dropshipping**, allowing the platform to display live products instead of relying on manually entered inventory.
+**MongoDB is the primary source of truth.** Redis caches responses; CJ is the fallback and the hourly refresh source.
 
-#### Product Synchronization Flow
-
-```text
-CJ Dropshipping
-      │
-      ▼
-Fetch Product Data
-      │
-      ▼
-Backend Processing
-      │
-      ▼
-Filter & Format Products
-      │
-      ▼
-Store in Redis Cache
-      │
-      ▼
-Display on Frontend
+```mermaid
+flowchart TD
+    A([User requests products]) --> B{MongoDB<br/>has products?}
+    B -->|Found| C[Return from MongoDB]
+    B -->|Not found| D{Redis<br/>has pool?}
+    D -->|Hit| E[Save to MongoDB] --> F[Return response]
+    D -->|Miss| G[Call CJ API]
+    G --> H[Receive raw CJ data]
+    H --> I[Transform to FootVerse format]
+    I --> J[Save to MongoDB]
+    J --> K[Update Redis cache]
+    K --> L[Return response]
 ```
 
-#### Features
+### Hourly Product Sync
 
-* Live product sourcing
-* Automatic product synchronization
-* Variant handling
-* Category mapping
-* Image optimization
-* Price conversion
-* Product pool generation
-* Reduced duplicate products
-
-#### Benefits
-
-* No manual inventory management
-* Always updated product catalog
-* Faster product loading
-* Better scalability
-* Lower API usage through caching
-
----
-
-## ⚡ Redis Caching
-
-Redis is used to reduce unnecessary API calls and database queries by storing frequently accessed data in memory.
-
-#### Cached Data
-
-* Product Pool
-* Product Categories
-* Featured Products
-* Product Details
-* Search Results
-
-#### Cache Flow
-
-```text
-          User Request
-               │
-               ▼
-        Check MongoDB
-               │
-        ┌──────┴──────┐
-        │             │
-      Found        Not Found
-        │             │
-        ▼             ▼
- Return Response   Check Redis
-                      │
-               ┌──────┴──────┐
-               │             │
-             Hit           Miss
-               │             │
-               ▼             ▼
-      Save to MongoDB     Call CJ API
-               │             │
-               ▼             ▼
-      Return Response   Receive Raw Data
-                             │
-                             ▼
-             Transform into FootVerse Format
-                             │
-                             ▼
-                   Save to MongoDB
-                             │
-                             ▼
-                   Update Redis Cache
-                             │
-                             ▼
-                    Return Response
+```mermaid
+flowchart TD
+    T([Scheduler: hourly + on startup]) --> P[Build CJ pool]
+    P --> U[Upsert products into MongoDB<br/>price, stock, images]
+    U --> S[Soft-delete products CJ no longer returns]
+    S --> C[Invalidate Redis cache]
+    C --> D([Storefront serves fresh data])
 ```
+
+**Benefits:** no manual inventory, always-updated catalog, faster loading, lower CJ API usage, and resilience — if Redis or CJ is unavailable, the store still serves from MongoDB.
+
 ---
 
 ## Authentication Flow
 
-FootVerse uses **JWT (JSON Web Token)** for secure authentication along with **OTP email verification** for user registration.
+FootVerse uses **JWT** for authentication with **email OTP verification** at registration. A `PendingUser` holds the data and hashed OTP until verified, then a real `User` is created.
 
-#### Registration Process
-
-```text
-User Registration
-        │
-        ▼
-Generate OTP
-        │
-        ▼
-Send OTP via Email
-        │
-        ▼
-User Verifies OTP
-        │
-        ▼
-Account Created
-        │
-        ▼
-JWT Token Generated
+```mermaid
+flowchart TD
+    A([User submits registration]) --> B[Create PendingUser<br/>hashed OTP + expiry]
+    B --> C[Email OTP to user]
+    C --> D([User enters OTP])
+    D --> E{OTP valid & not expired?}
+    E -->|No| F[Reject / allow resend]
+    E -->|Yes| G[Create User, delete PendingUser]
+    G --> H[Issue JWT token]
+    H --> I([Logged in])
 ```
 
-#### Login Process
+### Login
 
-```text
-User Login
-      │
-      ▼
-Validate Credentials
-      │
-      ▼
-Generate JWT
-      │
-      ▼
-Protected Routes
+```mermaid
+flowchart LR
+    A([User login]) --> B{Credentials valid?}
+    B -->|Yes| C[Generate JWT] --> D[Access protected routes]
+    B -->|No| E[Reject]
 ```
 
-#### Security Features
-
-* Password Encryption using bcrypt
-* JWT Authentication
-* OTP Email Verification
-* Protected API Routes
-* Secure Logout
-* Password Reset
+**Security features:** bcrypt password hashing, JWT authentication, OTP email verification, protected API routes, rate-limited auth endpoints, and password reset.
 
 ---
 
-## Payment Flow
+## Order & Payment Flow
 
-Stripe is integrated to provide secure and reliable online payments.
+Two payment paths. **COD** finalizes immediately; **Stripe** finalizes after payment is confirmed via redirect *and* webhook (idempotent).
 
-```text
-Add Products to Cart
-         │
-         ▼
-Proceed to Checkout
-         │
-         ▼
-Enter Shipping Details
-         │
-         ▼
-Stripe Payment Gateway
-         │
- ┌───────┴────────┐
- │                │
-Success         Failure
- │                │
- ▼                ▼
-Create Order   Show Error
- │
- ▼
-Sync with CJ
- │
- ▼
-Confirmation Email
+```mermaid
+flowchart TD
+    A([User checks out]) --> B{Payment method?}
+
+    B -->|COD| C[Create Order in MongoDB<br/>status: Confirmed]
+    C --> D[Clear cart] --> E[CJ sync in background] --> F([Order in history])
+
+    B -->|Card / Stripe| G[Create pending Order]
+    G --> H[Create Stripe Checkout Session]
+    H --> I([User pays on Stripe])
+    I --> J{Payment confirmed}
+    J -->|Success redirect| K[Verify session → mark paid]
+    J -->|Stripe webhook| L[Webhook → mark paid]
+    K --> M[Order finalized]
+    L --> M
+    M --> E
 ```
 
-#### Payment Features
+---
 
-* Secure payment processing
-* Order verification
-* Payment confirmation
-* Order creation after successful payment
+## CJ Order Synchronization
+
+After an order is saved in MongoDB, it syncs to CJ so the supplier fulfills it. Freight is calculated dynamically for the destination; legacy pre-CJ orders are skipped.
+
+```mermaid
+flowchart TD
+    A([Order saved in MongoDB]) --> B{Legacy pre-CJ order?}
+    B -->|Yes| C[Skip CJ]
+    B -->|No| D[Resolve variant]
+    D --> E[Freight-calculate → cheapest logistics]
+    E --> F[Create order at CJ]
+    F --> G{Success?}
+    G -->|Yes| H[Save cjOrderId, status: Synced]
+    G -->|Rate limited| I[Retry with backoff] --> F
+    G -->|Fail| J[status: CJ Sync Failed<br/>Mongo order still valid]
+    J -.admin reconcile.-> K[Find & re-sync mongo-only orders]
+```
+
+The order **always** saves in MongoDB first; CJ is secondary and self-healing via the admin reconcile tools.
+
+---
+
+## Order Cancellation & Return
+
+```mermaid
+flowchart TD
+    A([Order detail]) --> B{Status?}
+    B -->|Pending / Confirmed / Processing / Packed| C[Cancel Order]
+    B -->|Delivered| D[Return Order]
+    B -->|Shipped| E[No action]
+
+    C --> F[Pick reason] --> G[Update order → Cancelled]
+    G --> H[Archive copy → cancelledorders]
+    G --> I{Online payment?}
+    I -->|Yes| J[Refund: 5–7 days]
+
+    D --> K[Reason + comments]
+    K --> L{Payment method?}
+    L -->|COD| M[Collect UPI / bank details]
+    L -->|Card| N[Refund to original method]
+    M --> O[Return: Requested]
+    N --> O
+    O --> P([Admin approves / rejects])
+    P --> Q[Approved → Returned + refund Processing]
+```
 
 ---
 
 ## Database Overview
 
-MongoDB stores all application data in separate collections for better organization.
+MongoDB stores all application data in separate collections.
 
-#### Main Collections
-
-* Users
-* Products
-* Categories
-* Orders
-* Wishlist
-* Coupons
-* OTP Verification
-* Cart
-
-Each collection is linked through unique identifiers, ensuring efficient querying and scalability.
+| Collection | Purpose |
+| --- | --- |
+| `users` | Registered users, addresses, admin flag |
+| `pendingusers` | Registration data + OTP until verified |
+| `products` | CJ product snapshots (source of truth) + lifecycle fields |
+| `categories` | Category metadata |
+| `carts` | Per-user shopping carts |
+| `wishlists` | Per-user wishlists |
+| `orders` | All orders, timeline, CJ sync, cancel/return/refund |
+| `cancelledorders` | Full archived copy of each cancelled order |
+| `transactions` | Payment transaction records |
 
 ---
 
 ## Application Workflow
 
-The following diagram shows how different components interact when a user accesses the platform.
-
-```text
-User
- │
- ▼
-Next.js Frontend
- │
- ▼
-Express Backend
- │
- ├──────────────► Redis Cache
- │                     │
- │                     ▼
- │               Cached Response
- │
- ▼
-MongoDB Database
- │
- ▼
-CJ Dropshipping API
- │
- ▼
-Stripe Payment Gateway
- │
- ▼
-Email Service
- │
- ▼
-Response Returned to User
+```mermaid
+flowchart TD
+    U([User]) --> FE[Next.js Frontend]
+    FE --> BE[Express Backend]
+    BE --> R[(Redis Cache)]
+    BE --> DB[(MongoDB)]
+    BE --> CJ[[CJ Dropshipping API]]
+    BE --> ST[[Stripe]]
+    BE --> ML[[Email Service]]
+    BE --> RES([Response to User])
 ```
 
 ---
 
 ## Performance Optimizations
 
-To improve speed and scalability, FootVerse includes several optimization techniques:
-
-* Redis caching for frequently accessed data.
-* Optimized MongoDB queries.
-* Reduced external API requests.
-* Modular backend architecture.
-* Reusable React components.
-* Lazy loading where applicable.
-* Efficient API response handling.
+- Redis caching for frequently accessed product data.
+- MongoDB as primary source, reducing repeated CJ calls.
+- Cache invalidation on every product sync (no stale listings).
+- Modular backend architecture and reusable React components.
+- Efficient API response handling.
 
 ---
 
 ## Security Measures
 
-FootVerse follows industry-standard security practices to protect user data.
-
-* JWT-based authentication
-* Password hashing with bcrypt
-* OTP verification
-* Protected backend routes
-* Secure payment processing with Stripe
-* Input validation
-* Environment variables for sensitive credentials
-* Error handling and API validation
+- JWT-based authentication
+- Password hashing with bcrypt
+- OTP email verification
+- Protected backend routes and rate-limited auth endpoints
+- Secure payment processing with Stripe
+- Input validation and error handling
+- Environment variables for sensitive credentials
+- Idempotent payment finalization (safe redirect + webhook)
 
 ---
 
-The project follows a clean and modular folder structure by separating the frontend and backend into independent applications.
+## Folder Structure
 
 ```text
 FootVerse/
 │
-├── frontend/
-│   ├── app/
-│   ├── components/
-│   ├── hooks/
-│   ├── lib/
+├── footverse-frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   └── data/
 │   ├── public/
-│   ├── styles/
-│   ├── utils/
-│   ├── services/
 │   └── package.json
 │
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── cache/
-│   ├── utils/
-│   ├── scripts/
-│   ├── server.js
+├── footverse-backend/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── transformers/
+│   │   ├── utils/
+│   │   └── server.js
 │   └── package.json
 │
 ├── README.md
 └── .gitignore
 ```
 
-#### Folder Description
-
-| Folder           | Description                                                |
-| ---------------- | ---------------------------------------------------------- |
-| **frontend/**    | Next.js application containing all UI components and pages |
-| **backend/**     | Express.js backend with REST APIs                          |
-| **controllers/** | Business logic for API requests                            |
-| **routes/**      | API endpoint definitions                                   |
-| **models/**      | MongoDB database schemas                                   |
-| **middleware/**  | Authentication and request middleware                      |
-| **services/**    | CJ Dropshipping, Stripe, Email and other services          |
-| **cache/**       | Redis caching logic                                        |
-| **utils/**       | Helper functions and utilities                             |
-| **config/**      | Database and application configuration                     |
+| Folder | Description |
+| --- | --- |
+| **footverse-frontend/** | Next.js application with all UI components and pages |
+| **footverse-backend/** | Express.js backend with REST APIs |
+| **controllers/** | Business logic for API requests |
+| **routes/** | API endpoint definitions |
+| **models/** | MongoDB schemas |
+| **middleware/** | Authentication, CORS, and rate-limiting |
+| **services/** | CJ, Stripe, product, order, sync, and email logic |
+| **transformers/** | Convert raw CJ data into FootVerse format |
+| **utils/** | Helpers, including Redis cache utilities |
+| **config/** | Database and Redis configuration |
 
 ---
 
@@ -549,22 +422,19 @@ FootVerse/
 
 ### Prerequisites
 
-Before running the project, make sure the following software is installed:
-
-* Node.js (v18 or above)
-* npm
-* MongoDB
-* Redis
-* Git
-* VS Code (Recommended)
+- Node.js (v18 or above)
+- npm
+- MongoDB
+- Redis
+- Git
 
 You will also need accounts for:
 
-* CJ Dropshipping
-* Stripe
-* Gmail (App Password)
-* MongoDB Atlas *(Optional)*
-* Redis Cloud *(Optional)*
+- CJ Dropshipping
+- Stripe
+- Gmail (App Password for email)
+- MongoDB Atlas *(for cloud deployment)*
+- Redis / Upstash *(for cloud deployment)*
 
 ---
 
@@ -574,27 +444,20 @@ You will also need accounts for:
 
 ```bash
 git clone https://github.com/PrachiSirola/FootVerse.git
-
 cd FootVerse
 ```
-
----
 
 ### 2. Install Backend Dependencies
 
 ```bash
-cd backend
-
+cd footverse-backend
 npm install
 ```
-
----
 
 ### 3. Install Frontend Dependencies
 
 ```bash
-cd ../frontend
-
+cd ../footverse-frontend
 npm install
 ```
 
@@ -602,102 +465,125 @@ npm install
 
 ## Environment Variables
 
-Create a `.env` file inside the **backend** directory and add the following variables.
+### Backend
+
+Create a `.env` file inside **footverse-backend/** with the following keys (leave values blank here; fill them in locally — never commit real secrets):
 
 ```env
 PORT=5000
 
 MONGO_URI=
-
+REDIS_URL=
 JWT_SECRET=
 
-REDIS_URL=
-
-CJ_EMAIL=
-CJ_PASSWORD=
-CJ_ACCESS_TOKEN=
+CJ_API_KEY=
+CJ_API_BASE=
+CJ_POOL_PER_KEYWORD=20
+PRODUCT_SYNC_MS=3600000
 
 STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
 
-EMAIL_USER=
-EMAIL_PASS=
+MAIL_USER=
+MAIL_PASS=
+MAIL_FROM=
 
 CLIENT_URL=http://localhost:3000
-SERVER_URL=http://localhost:5000
+CLIENT_ORIGIN=http://localhost:3000
 ```
+
+### Frontend
+
+Create a `.env.local` file inside **footverse-frontend/**:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+> **Note:** `NEXT_PUBLIC_API_URL` is the backend **root** URL — the app appends `/api` automatically. Do not include `/api` or a trailing slash. Keep all `.env` files out of Git.
 
 ---
 
 ## Running the Project
 
-### Step 1: Start MongoDB
+### 1. Start MongoDB
 
 ```bash
 mongod
 ```
 
----
-
-### Step 2: Start Redis
+### 2. Start Redis
 
 ```bash
 redis-server
 ```
 
----
-
-### Step 3: Start Backend
+### 3. Start Backend
 
 ```bash
-cd backend
-
+cd footverse-backend
 node src/server.js
 ```
 
-Backend will run on:
+Backend runs on `http://localhost:5000`. On first start it seeds MongoDB from CJ and then syncs hourly.
 
-```text
-http://localhost:5000
-```
-
----
-
-### Step 4: Start Frontend
+### 4. Start Frontend
 
 ```bash
-cd frontend
-
+cd footverse-frontend
 npm run dev
 ```
 
-Frontend will run on:
-
-```text
-http://localhost:3000
-```
+Frontend runs on `http://localhost:3000`.
 
 ---
 
 ## Deployment
 
-The project is designed for independent frontend and backend deployment.
+The frontend and backend deploy independently.
 
-### Frontend
+```mermaid
+flowchart TD
+    REPO[GitHub repo<br/>footverse-frontend + footverse-backend]
+    REPO -->|push main| V[Vercel<br/>frontend]
+    REPO -->|push main| RN[Render<br/>backend]
+    V --> DOM[Production domain<br/>*.vercel.app]
+    RN --> API[Backend<br/>*.onrender.com]
+    DOM -->|NEXT_PUBLIC_API_URL| API
+    API -->|CLIENT_ORIGIN / CLIENT_URL| DOM
+    API --> ATLAS[(MongoDB Atlas)]
+    API --> UPSTASH[(Upstash Redis)]
+    API --> CJ2[[CJ Dropshipping]]
+    API --> STRIPE2[[Stripe]]
+```
 
-* Platform: **Vercel**
-* Connect GitHub repository
-* Configure environment variables
-* Deploy
+### Frontend (Vercel)
+- Connect the GitHub repository (root directory: `footverse-frontend`).
+- Set `NEXT_PUBLIC_API_URL` to the backend root URL.
+- Deploy.
 
-### Backend
+### Backend (Render)
+- Connect the GitHub repository (root directory: `footverse-backend`).
+- Build command: `npm install` · Start command: `node src/server.js`.
+- Add all backend environment variables.
+- Set `CLIENT_ORIGIN` and `CLIENT_URL` to the frontend URL (for CORS and email links).
+- Deploy.
 
-* Platform: **Render**
-* Connect GitHub repository
-* Add environment variables
-* Configure build command
-* Deploy Express server
+### Connection rules
+- **Frontend → Backend:** `NEXT_PUBLIC_API_URL` = backend root URL (no `/api`).
+- **Backend → Frontend (CORS):** `CLIENT_ORIGIN` allows the frontend domain.
 
 ---
 
+## Design Principles
 
+- **MongoDB is the source of truth** — Redis and CJ are supporting layers.
+- **Writes are never blocked by external services** — orders save first; CJ/Stripe are secondary and self-heal.
+- **Idempotency** — payment finalization and syncs can safely run more than once.
+- **Graceful degradation** — the storefront serves from MongoDB even if Redis or CJ is down.
+- **Soft deletes** — removed CJ products are hidden, not destroyed, preserving order history.
+
+---
+
+## License
+
+This project is developed for educational and portfolio purposes.
