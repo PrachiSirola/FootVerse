@@ -1,5 +1,3 @@
-// src/config/cjConfig.js
-
 const CJ_CONFIG = {
   BASE_URL: "https://developers.cjdropshipping.com/api2.0/v1",
 

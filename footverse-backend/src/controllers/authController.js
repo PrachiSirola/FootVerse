@@ -261,8 +261,6 @@ export async function updateMe(req, res) {
    ───────────────────────────────────────────── */
 
 const MAX_AVATAR_CHARS = 2_800_000; // ~2MB base64 ceiling
-
-/** PATCH /api/auth/avatar  { avatar: "data:image/...base64," } */
 export async function updateAvatar(req, res) {
   try {
     const { avatar } = req.body || {};

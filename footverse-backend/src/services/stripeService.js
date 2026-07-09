@@ -24,8 +24,8 @@ export async function createCheckoutSession({ items = [], orderId }) {
     mode: "payment",
     line_items,
     metadata: { orderId: String(orderId) },
-    success_url: "http://localhost:3000/payment/success?session_id={CHECKOUT_SESSION_ID}",
-    cancel_url: "http://localhost:3000/payment/cancel",
+    success_url: `${process.env.CLIENT_URL || "http://localhost:3000"}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.CLIENT_URL || "http://localhost:3000"}/payment/cancel`,
   });
 
   return session;

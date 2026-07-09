@@ -22,13 +22,6 @@ function uidFromReq(req) {
   return null;
 }
 
-/**
- * ============================================
- * Create Stripe Checkout Session
- * 1. Save the order in Mongo (Pending).
- * 2. Hand Stripe only the order _id in metadata.
- * ============================================
- */
 export async function checkout(req, res) {
   try {
     const { items, customer, shipping } = req.body;
@@ -37,7 +30,6 @@ export async function checkout(req, res) {
       return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
-    // customer + shipping may arrive separately; merge them for the order record.
     const mergedCustomer = { ...(customer || {}), ...(shipping || {}) };
 
     const order = await createPendingOrder({
@@ -60,11 +52,6 @@ export async function checkout(req, res) {
   }
 }
 
-/**
- * ============================================
- * Verify Payment — mark the pre-created order Paid.
- * ============================================
- */
 export async function verifyPayment(req, res) {
   try {
     const { sessionId } = req.params;
@@ -76,9 +63,11 @@ export async function verifyPayment(req, res) {
 
     const orderId = session.metadata?.orderId;
     if (!orderId) {
+      console.warn("[payment] verify: no orderId in session metadata", sessionId);
       return res.status(400).json({ success: false, message: "Order reference missing." });
     }
 
+    console.log(`[payment] verify session ${sessionId} → order ${orderId} → marking paid`);
     const order = await markOrderPaid(orderId, session);
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found." });
@@ -88,5 +77,23 @@ export async function verifyPayment(req, res) {
   } catch (error) {
     console.error("Verify Payment Error:", error);
     return res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+export async function stripeWebhook(req, res) {
+  try {
+    const event = req.body; // raw JSON (see route note about signature verification)
+    if (event?.type === "checkout.session.completed") {
+      const session = event.data?.object;
+      const orderId = session?.metadata?.orderId;
+      if (orderId && session.payment_status === "paid") {
+        console.log(`[payment webhook] checkout.session.completed → finalizing order ${orderId}`);
+        await markOrderPaid(orderId, session);
+      }
+    }
+    res.json({ received: true });
+  } catch (err) {
+    console.error("[payment webhook] error:", err.message);
+    res.status(400).json({ received: false, error: err.message });
   }
 }
