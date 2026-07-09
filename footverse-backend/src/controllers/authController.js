@@ -37,6 +37,7 @@ export async function register(req, res) {
       email,
       passwordHash: await bcrypt.hash(password, 10),
       otpHash: await hashOtp(otp),
+      otpPlain: otp, // DEV ONLY: visible in Mongo for local testing
       otpExpires: new Date(now + OTP_TTL_MS),
       attempts: 0,
       lastSentAt: new Date(now),
@@ -46,7 +47,8 @@ export async function register(req, res) {
     // Upsert: if they restart signup before verifying, replace the pending record.
     await PendingUser.findOneAndUpdate({ email }, doc, { upsert: true, new: true, setDefaultsOnInsert: true });
 
-    await sendOtpEmail(email, otp, name);
+    console.log(`[OTP] ${email} → code: ${otp} (also stored as otpPlain in Mongo)`);
+    await sendOtpEmail(email, otp, name).catch((e) => console.warn(`[OTP] email failed (code still in Mongo/console): ${e.message}`));
 
     return res.status(200).json({
       success: true,

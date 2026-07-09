@@ -198,14 +198,24 @@ export async function createCodOrderForUser(uid, customer = {}) {
   await cart.save();
 
   // Sync to CJ in the background — customer doesn't wait on it.
-  console.log(`[order] COD order ${order.orderNumber} created → firing CJ sync`);
+  console.log(`[order] COD order ${order.orderNumber} SAVED to Mongo:`);
+  console.log(`         _id=${order._id}  user=${order.user}  status=${order.orderStatus}`);
+  // Immediately verify it's queryable by the same filter history uses.
+  const check = await Order.countDocuments({ user: uid });
+  console.log(`[order] this user (${uid}) now has ${check} order(s) in Mongo`);
   syncOrderToCJInBackground(order._id);
 
   return order;
 }
 
 export async function getOrdersForUser(uid) {
-  return Order.find({ user: uid }).sort({ createdAt: -1 });
+  const orders = await Order.find({ user: uid }).sort({ createdAt: -1 });
+  console.log(`[order history] querying user=${uid} → found ${orders.length} order(s)`);
+  if (orders.length === 0) {
+    const total = await Order.countDocuments();
+    console.log(`[order history] (DB has ${total} orders total across all users)`);
+  }
+  return orders;
 }
 
 /**

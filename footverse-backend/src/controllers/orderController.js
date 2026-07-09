@@ -200,3 +200,15 @@ export async function adminSyncProducts(_req, res) {
   const r = await runProductSync();
   res.json({ success: !!r.ok, ...r });
 }
+
+/** GET /api/orders/admin/all — list every order in Mongo (diagnostic). */
+export async function adminListAllOrders(_req, res) {
+  try {
+    const { default: Order } = await import("../models/Order.js");
+    const orders = await Order.find().sort({ createdAt: -1 })
+      .select("orderNumber user paymentMethod orderStatus grandTotal cjOrderId cjSyncStatus createdAt");
+    res.json({ success: true, count: orders.length, orders });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
