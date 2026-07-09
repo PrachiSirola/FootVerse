@@ -285,29 +285,39 @@ Redis is used to reduce unnecessary API calls and database queries by storing fr
 #### Cache Flow
 
 ```text
-User Request
-      │
-      ▼
-Check Redis Cache
-      │
- ┌────┴────┐
- │         │
-Hit       Miss
- │         │
- ▼         ▼
-Return    CJ API
-Data         │
-             ▼
-     Receive Raw Data
-             │
-             ▼
- Transform into Footverse format
-             │
-             ▼
-      Update Redis Cache
-             │
-             ▼
-      Return Response
+          User Request
+               │
+               ▼
+        Check MongoDB
+               │
+        ┌──────┴──────┐
+        │             │
+      Found        Not Found
+        │             │
+        ▼             ▼
+ Return Response   Check Redis
+                      │
+               ┌──────┴──────┐
+               │             │
+             Hit           Miss
+               │             │
+               ▼             ▼
+      Save to MongoDB     Call CJ API
+               │             │
+               ▼             ▼
+      Return Response   Receive Raw Data
+                             │
+                             ▼
+             Transform into FootVerse Format
+                             │
+                             ▼
+                   Save to MongoDB
+                             │
+                             ▼
+                   Update Redis Cache
+                             │
+                             ▼
+                    Return Response
 ```
 ---
 
