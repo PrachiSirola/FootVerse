@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import { cancelOrderAtCJ } from "./cjOrderService.js";
+import CancelledOrder from "../models/CancelledOrder.js";
 
 /** Statuses at which a user may still CANCEL (before shipping). */
 const CANCELLABLE = ["Pending", "Confirmed", "Processing", "Packed"];
@@ -59,7 +60,31 @@ export async function cancelOrder(orderId, { reason, by = "user", userId = null 
   }
 
   await order.save();
-  console.log(`[cancel] ${order.orderNumber} → cancelled in MongoDB ✓ (status: Cancelled)`);
+  const dbName = order.db?.name || order.constructor.db?.name || "unknown";
+  console.log(`[cancel] ${order.orderNumber} → orders collection updated to "Cancelled" ✓ (db: ${dbName})`);
+
+  // Archive a full copy into the CancelledOrder collection.
+  try {
+    const archived = await CancelledOrder.create({
+      originalOrderId: order._id,
+      orderNumber: order.orderNumber,
+      user: order.user,
+      reason: order.cancellation?.reason,
+      cancelledBy: order.cancellation?.cancelledBy,
+      cancelledAt: order.cancellation?.cancelledAt,
+      refund: {
+        status: order.refund?.status,
+        method: order.refund?.method,
+        amount: order.refund?.amount,
+      },
+      snapshot: order.toObject(),
+    });
+    const total = await CancelledOrder.countDocuments();
+    console.log(`[cancel] ${order.orderNumber} → archived to 'cancelledorders' ✓ (_id=${archived._id}, collection now has ${total})`);
+  } catch (err) {
+    console.error(`[cancel] ${order.orderNumber} → CancelledOrder archive FAILED: ${err.message}`);
+    console.error(`[cancel] full error:`, err);
+  }
 
   // Cancel at CJ — only if it actually synced there.
   let cjResult = "not-applicable";
