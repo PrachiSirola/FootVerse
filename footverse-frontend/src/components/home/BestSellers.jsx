@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 import api from "@/lib/api";
 import ProductCard from "@/components/product/ProductCard";
 import SectionHeading from "./SectionHeading";
@@ -12,6 +13,7 @@ import SectionHeading from "./SectionHeading";
  */
 export default function BestSellers() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
@@ -44,9 +46,10 @@ export default function BestSellers() {
             idx++;
           }
         }
-        if (alive) setProducts(picks.slice(0, 8));
+        if (alive) { setProducts(picks.slice(0, 8)); setLoading(false); }
       } catch (err) {
         console.error(err);
+        if (alive) setLoading(false);
       }
     })();
     return () => { alive = false; };
@@ -62,11 +65,15 @@ export default function BestSellers() {
         href="/products?sort=rating"
         linkLabel="View All Products"
       />
+      {loading ? (
+        <ProductGridSkeleton count={4} className="!grid-cols-2 lg:!grid-cols-4" />
+      ) : (
       <div className="grid grid-cols-2 gap-5 sm:gap-6 lg:grid-cols-4">
         {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
       </div>
+      )}
     </section>
   );
 }

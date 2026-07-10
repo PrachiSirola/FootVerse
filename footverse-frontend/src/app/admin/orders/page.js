@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { adminReconcileReport, adminReconcileRun } from "@/lib/order";
@@ -46,7 +47,7 @@ export default function AdminOrdersPage() {
     }
   }
 
-  if (!ready || loading) return <Spinner fullPage label="Loading order sync report…" />;
+  if (!ready || loading) return <div className="mx-auto max-w-4xl px-5 py-10"><OrderListSkeleton rows={3} /></div>;
   if (!user?.isAdmin) return null;
 
   const counts = report?.counts || {};

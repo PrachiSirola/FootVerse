@@ -10,6 +10,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { priceLabel, isPriceless } from "@/lib/format";
 import Spinner from "@/components/ui/Spinner";
+import { ProductDetailSkeleton } from "@/components/ui/Skeleton";
 
 const FALLBACK = "/products/placeholder.svg";
 
@@ -102,7 +103,7 @@ export default function DbProductDetail({ id }) {
   };
 
   if (loading) {
-    return <Spinner fullPage label="Loading product…" />;
+    return <ProductDetailSkeleton />;
   }
 
   if (error || !product) {

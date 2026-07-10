@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 import api from "@/lib/api";
 import ProductCard from "@/components/product/ProductCard";
 import SectionHeading from "./SectionHeading";
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadProducts() {
@@ -32,6 +34,8 @@ export default function FeaturedProducts() {
         setProducts(picks.slice(0, 8));
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -46,6 +50,9 @@ export default function FeaturedProducts() {
         href="/products"
       />
 
+      {loading ? (
+        <ProductGridSkeleton count={8} />
+      ) : (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((product) => (
           <ProductCard
@@ -54,6 +61,7 @@ export default function FeaturedProducts() {
           />
         ))}
       </div>
+      )}
     </section>
   );
 }

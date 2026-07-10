@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import Link from "next/link";
 import { getOrders } from "@/lib/order";
 
@@ -27,8 +28,9 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto py-24 text-center">
-        <h1 className="text-2xl font-bold">Loading Orders...</h1>
+      <div className="mx-auto max-w-6xl px-5 py-10">
+        <div className="mb-8 h-8 w-48 fv-skeleton rounded" />
+        <OrderListSkeleton rows={4} />
       </div>
     );
   }

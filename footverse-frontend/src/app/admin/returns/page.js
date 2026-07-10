@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { adminListReturns, adminResolveReturn, adminMarkRefunded } from "@/lib/order";
@@ -51,7 +52,7 @@ export default function AdminReturnsPage() {
     }
   }
 
-  if (!ready || loading) return <Spinner fullPage label="Loading…" />;
+  if (!ready || loading) return <div className="mx-auto max-w-6xl px-5 py-10"><OrderListSkeleton rows={4} /></div>;
   if (!user?.isAdmin) return null;
 
   return (

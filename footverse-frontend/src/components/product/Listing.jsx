@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Spinner from "@/components/ui/Spinner";
+import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 import api from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -144,7 +145,7 @@ export default function Listing() {
         {/* Grid */}
         <div className="min-w-0 flex-1">
           {loading ? (
-            <Spinner label="Loading products…" />
+            <ProductGridSkeleton count={8} />
           ) : items.length === 0 ? (
             <div className="rounded-2xl bg-white p-14 text-center shadow-sm">
               <p className="font-playfair text-2xl font-bold text-[#33231A]">No products found</p>
