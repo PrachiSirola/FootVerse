@@ -1,3 +1,4 @@
+import { classifyCategory, classifySubcategory } from "../utils/categoryClassifier.js";
 /**
  * Transforms a raw CJ product into the exact shape the FootVerse frontend
  * already expects (matching the old MongoDB documents), so nothing on the
@@ -8,6 +9,12 @@
  */
 export function transformCJLive(raw, category = "", subcategory = "") {
   const price = Number(String(raw.sellPrice ?? "").split("--")[0].trim()) || 0;
+  const name = raw.nameEn || raw.productNameEn || raw.name || "Unnamed Product";
+
+  // Resolve the REAL category/subcategory from the product name so broad keyword
+  // searches don't mix Men/Women/Kids. Falls back to the keyword's guess.
+  const resolvedCategory = classifyCategory(name, category);
+  const resolvedSub = classifySubcategory(name, subcategory);
 
   return {
     // Use the CJ product id as the stable id the frontend routes on.
@@ -16,12 +23,12 @@ export function transformCJLive(raw, category = "", subcategory = "") {
 
     source: "cj",
     sku: raw.sku || "",
-    name: raw.nameEn || raw.productNameEn || raw.name || "Unnamed Product",
+    name,
     brand: raw.brandName || "",
 
-    category,
-    categoryName: category,
-    subcategory,
+    category: resolvedCategory,
+    categoryName: resolvedCategory,
+    subcategory: resolvedSub,
 
     description: raw.description || raw.productDescription || "",
 

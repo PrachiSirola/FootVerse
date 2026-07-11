@@ -27,6 +27,8 @@ export default function Listing() {
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageInfo, setPageInfo] = useState({ page: 1, totalPages: 1, total: 0 });
+  const PAGE_SIZE = 50;
 
   const criteria = useMemo(() => ({
     q: sp.get("q") || "",
@@ -34,6 +36,10 @@ export default function Listing() {
     sub: sp.get("sub") || "",
     sort: sp.get("sort") || "featured",
   }), [sp]);
+
+  // Current page comes from the URL (?page=2), same pattern Pagination already
+  // writes to — so Prev/Next/page-number clicks actually change what loads.
+  const currentPage = Math.max(1, Number(sp.get("page")) || 1);
 
   useEffect(() => {
     async function loadProducts() {
@@ -46,31 +52,22 @@ export default function Listing() {
             : undefined,
           sub: criteria.sub || undefined,
           q: criteria.q || undefined,
+          sort: criteria.sort || undefined,
+          page: currentPage,
+          limit: PAGE_SIZE,
         };
 
         const res = await api.get("/products", { params });
 
-        // Backend may return an array OR { items: [...] } — handle both.
-        let data = Array.isArray(res.data) ? res.data : res.data.items || [];
-
-        // TEMP DEBUG — remove once confirmed working. Shows in the browser console.
-        console.log("[FootVerse] GET /products", params, "→", data.length, "items");
-
-        switch (criteria.sort) {
-          case "price-asc":
-            data.sort((a, b) => a.price - b.price);
-            break;
-
-          case "price-desc":
-            data.sort((a, b) => b.price - a.price);
-            break;
-
-          default:
-            break;
-        }
-
+        // Backend returns { items, page, totalPages, total, ... } (paginated).
+        // Fall back to a plain array for older/other callers during rollout.
+        const data = Array.isArray(res.data) ? res.data : res.data.items || [];
         setItems(data);
-
+        setPageInfo({
+          page: res.data?.page || 1,
+          totalPages: res.data?.totalPages || 1,
+          total: res.data?.total ?? data.length,
+        });
       } catch (err) {
         console.error(err);
       } finally {
@@ -80,11 +77,11 @@ export default function Listing() {
 
     loadProducts();
 
-  }, [criteria]);
+  }, [criteria, currentPage]);
 
-  const total = items.length;
-  const pages = 1;
-  const page = 1;
+  const total = pageInfo.total;
+  const pages = pageInfo.totalPages;
+  const page = pageInfo.page;
 
   const cat = CATEGORIES.find((c) => c.slug === criteria.category);
   const title = criteria.q

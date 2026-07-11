@@ -40,7 +40,23 @@ export const getProducts = async (query = {}) => {
     default: break;
   }
 
-  return list;
+  // ---- pagination (default 50 per page, matches the storefront) ----
+  const total = list.length;
+  const limit = Math.max(1, Math.min(200, Number(query.limit) || 50)); // cap at 200/page to protect payload size
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const page = Math.max(1, Math.min(totalPages, Number(query.page) || 1));
+  const start = (page - 1) * limit;
+  const items = list.slice(start, start + limit);
+
+  return {
+    items,
+    page,
+    limit,
+    total,
+    totalPages,
+    hasNextPage: page < totalPages,
+    hasPrevPage: page > 1,
+  };
 };
 
 /** Strip HTML tags/entities → clean plain text (CJ descriptions are raw HTML). */

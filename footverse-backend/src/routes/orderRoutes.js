@@ -14,8 +14,6 @@ import {
   reconcileReport,
   reconcileRun,
   adminUpdateStatus,
-  adminSyncProducts,
-  adminListAllOrders,
 } from "../controllers/orderController.js";
 import { authRequired, adminRequired } from "../middleware/auth.js";
 
@@ -46,7 +44,5 @@ router.post("/admin/:id/refunded", adminRequired, adminMarkRefunded);
 router.get("/admin/reconcile/report", adminRequired, reconcileReport);
 router.post("/admin/reconcile/run", adminRequired, reconcileRun);
 router.post("/admin/:id/status", adminRequired, adminUpdateStatus);
-router.post("/admin/products/sync", adminRequired, adminSyncProducts);
-router.get("/admin/all", adminRequired, adminListAllOrders);
 
 export default router;
