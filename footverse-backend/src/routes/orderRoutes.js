@@ -2,7 +2,6 @@ import express from "express";
 import {
   getOrders,
   getOrder,
-  placeCodOrder,
   getMyOrders,
   retryCjSync,
   retryAllCjSyncs,
@@ -14,18 +13,22 @@ import {
   reconcileReport,
   reconcileRun,
   adminUpdateStatus,
+  adminSyncProducts,
+  adminListAllOrders,
+  getStoreConfig,
+  adminProductStatus,
 } from "../controllers/orderController.js";
 import { authRequired, adminRequired } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // Authenticated user endpoints
-router.post("/cod", authRequired, placeCodOrder);
+router.get("/config", getStoreConfig); // public: B2B minimum order value
 router.get("/my", authRequired, getMyOrders);
 
 // Admin / lookup
 router.get("/", getOrders);
-router.get("/:id", getOrder);
+router.get("/:id", authRequired, getOrder); // customer view — own order only
 
 // CJ sync retry (manual)
 router.post("/cj-retry-all", authRequired, retryAllCjSyncs);
@@ -44,5 +47,8 @@ router.post("/admin/:id/refunded", adminRequired, adminMarkRefunded);
 router.get("/admin/reconcile/report", adminRequired, reconcileReport);
 router.post("/admin/reconcile/run", adminRequired, reconcileRun);
 router.post("/admin/:id/status", adminRequired, adminUpdateStatus);
+router.post("/admin/products/sync", adminRequired, adminSyncProducts);
+router.get("/admin/products/status", adminRequired, adminProductStatus);
+router.get("/admin/all", adminRequired, adminListAllOrders);
 
 export default router;

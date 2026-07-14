@@ -10,7 +10,7 @@ import { transformCJLive } from "../transformers/cjLiveTransformer.js";
 import { apiClient } from "../utils/apiClient.js";
 import CJ_CONFIG from "../config/cjConfig.js";
 import { cacheGet, cacheSet, PRODUCT_PREFIX } from "../utils/cache.js";
-import { getAllProducts, getProductById } from "./productRepository.js";
+import { getAllProducts, getProductById } from "./productStore.js";
 
 /* ---- LISTING (mirrors old getProducts filter semantics) ---- */
 export const getProducts = async (query = {}) => {
@@ -40,9 +40,9 @@ export const getProducts = async (query = {}) => {
     default: break;
   }
 
-  // ---- pagination (default 50 per page, matches the storefront) ----
+  // ---- pagination (15 per page — the storefront default) ----
   const total = list.length;
-  const limit = Math.max(1, Math.min(200, Number(query.limit) || 50)); // cap at 200/page to protect payload size
+  const limit = Math.max(1, Math.min(100, Number(query.limit) || 15)); // 15/page default, hard cap 100
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const page = Math.max(1, Math.min(totalPages, Number(query.page) || 1));
   const start = (page - 1) * limit;

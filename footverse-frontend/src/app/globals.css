@@ -7,12 +7,12 @@
 @tailwind utilities;
 
 /* Version-proof font classes — no Tailwind config required. */
-.font-playfair {
-  font-family: "Playfair Display", Georgia, serif;
+.font-sans {
+  font-family: Inter, Arial, Helvetica, sans-serif;
 }
 .font-oswald {
-  font-family: "Oswald", "Arial Narrow", sans-serif;
-} 
+  font-family: "Oswald", "Arial Narrow", sans;
+}
 
 html {
   scroll-behavior: smooth;
@@ -21,7 +21,7 @@ html {
 body {
   background-color: #f7f4ef;
   color: #33231a;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -64,3 +64,37 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .fv-skeleton { animation: none; background: #ECE6DC; }
 }
+
+/* ================= RESPONSIVE SAFETY NET =================
+   Guarantees nothing can push the page sideways at ANY width. If a component
+   ever overflows, it's contained here rather than breaking the whole layout. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Media and embeds never exceed their container. */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Long unbroken strings (URLs, emails, SKUs) wrap instead of overflowing. */
+p,
+h1,
+h2,
+h3,
+h4,
+li,
+td,
+th,
+span {
+  overflow-wrap: anywhere;
+}
+
+/* Tables that must stay wide scroll inside their own container (see the admin
+   Table component) rather than stretching the page. */

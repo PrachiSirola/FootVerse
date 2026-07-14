@@ -26,8 +26,12 @@ export function AuthProvider({ children }) {
   };
 
   // Registration now sends an OTP; the user is NOT created yet.
-  const register = async (name, email, password) => {
-    const r = await api.post("/auth/register", { name, email, password });
+  const register = async (name, email, password, adminSecretCode = "") => {
+    // adminSecretCode is optional. It is validated ONLY on the server against
+    // ADMIN_SECRET_CODE — the secret never lives in the frontend.
+    const payload = { name, email, password };
+    if (adminSecretCode) payload.adminSecretCode = adminSecretCode;
+    const r = await api.post("/auth/register", payload);
     return r.data; // { success, email, expiresInMs }
   };
 

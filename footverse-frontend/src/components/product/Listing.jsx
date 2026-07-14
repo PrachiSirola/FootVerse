@@ -28,7 +28,7 @@ export default function Listing() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pageInfo, setPageInfo] = useState({ page: 1, totalPages: 1, total: 0 });
-  const PAGE_SIZE = 50;
+  const PAGE_SIZE = 15;
 
   const criteria = useMemo(() => ({
     q: sp.get("q") || "",
@@ -84,9 +84,10 @@ export default function Listing() {
   const page = pageInfo.page;
 
   const cat = CATEGORIES.find((c) => c.slug === criteria.category);
+  // With no category/search, /products IS the All Products view.
   const title = criteria.q
     ? `Results for “${criteria.q}”`
-    : criteria.sub || (cat ? cat.name : "All Footwear");
+    : criteria.sub || (cat ? cat.name : "All Products");
 
   const setSort = (value) => {
     const next = new URLSearchParams(sp.toString());
@@ -101,12 +102,19 @@ export default function Listing() {
       <p className="text-[11px] uppercase tracking-[0.3em] text-[#A5793A]">
         {cat ? cat.name : "Shop"}
       </p>
-      <h1 className="mt-1 font-playfair text-4xl font-bold text-[#33231A]">{title}</h1>
+      <h1 className="mt-1 font-sans text-3xl font-bold text-[#33231A] sm:text-4xl">{title}</h1>
+
+      {/* Total catalogue size — formatted (e.g. "8,542 Products") */}
+      <p className="mt-2 text-[15px] text-[#6E655C]">
+        <span className="font-semibold text-[#33231A]">{total.toLocaleString()}</span>{" "}
+        {total === 1 ? "Product" : "Products"}
+      </p>
 
       {/* Sort bar */}
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-y border-[#33231A]/10 py-3">
         <p className="text-sm text-[#6E655C]">
-          <span className="font-semibold text-[#33231A]">{total}</span> products
+          Showing page <span className="font-semibold text-[#33231A]">{page}</span> of{" "}
+          <span className="font-semibold text-[#33231A]">{pages.toLocaleString()}</span>
         </p>
         <div className="flex items-center gap-3">
           <button
@@ -145,13 +153,13 @@ export default function Listing() {
             <ProductGridSkeleton count={8} />
           ) : items.length === 0 ? (
             <div className="rounded-2xl bg-white p-14 text-center shadow-sm">
-              <p className="font-playfair text-2xl font-bold text-[#33231A]">No products found</p>
+              <p className="font-sans text-2xl font-bold text-[#33231A]">No products found</p>
               <p className="mt-2 text-sm text-[#6E655C]">
                 Try removing a filter or two — the perfect pair is out there.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
               {items.map((p) => (
                 <ProductCard
                   key={p._id}
@@ -160,7 +168,7 @@ export default function Listing() {
               ))}
             </div>
           )}
-          <Pagination page={page} pages={pages} />
+          <Pagination page={page} pages={pages} total={total} />
         </div>
       </div>
 

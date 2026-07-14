@@ -83,7 +83,7 @@ export default function ProductDetail({ product }) {
           <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-[#A5793A]">
             {product.brand} · {product.subcategory}
           </p>
-          <h1 className="mt-1 font-playfair text-4xl font-bold text-[#33231A]">{product.name}</h1>
+          <h1 className="mt-1 font-sans text-4xl font-bold text-[#33231A]">{product.name}</h1>
           <div className="mt-3 flex items-center gap-2">
             <RatingStars rating={product.rating} size={16} />
             <span className="text-sm text-[#6E655C]">
@@ -175,7 +175,7 @@ export default function ProductDetail({ product }) {
           <div className="mt-9 border-t border-[#33231A]/10 pt-6">
             <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#33231A]">Description</h2>
             <p className="mt-2.5 max-w-lg text-[15px] leading-relaxed text-[#6E655C]">{product.description}</p>
-            <ul className="mt-4 grid max-w-lg grid-cols-2 gap-2 text-[13px] text-[#6E655C]">
+            <ul className="mt-4 grid max-w-lg grid-cols-1 gap-2 text-[13px] text-[#6E655C] sm:grid-cols-2">
               <li>✓ Genuine brand product</li>
               <li>✓ 30-day easy returns</li>
               <li>✓ COD available</li>
@@ -188,7 +188,7 @@ export default function ProductDetail({ product }) {
       {/* Related */}
       {related.length > 0 && (
         <div className="mt-16">
-          <h2 className="font-playfair text-3xl font-bold text-[#33231A]">You may also like</h2>
+          <h2 className="font-sans text-3xl font-bold text-[#33231A]">You may also like</h2>
           <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />

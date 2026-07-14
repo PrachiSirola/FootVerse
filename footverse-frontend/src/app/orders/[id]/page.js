@@ -3,18 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getOrder, cancelOrder, requestReturn, adminUpdateStatus } from "@/lib/order";
+import { getOrder, cancelOrder } from "@/lib/order";
 import CancelModal from "@/components/orders/CancelModal";
-import ReturnModal from "@/components/orders/ReturnModal";
 import { useAuth } from "@/context/AuthContext";
 
 const CANCELLABLE = ["Pending", "Confirmed", "Processing", "Packed"];
-const NEXT_STATUS = {
-  Confirmed: ["Processing", "Packed", "Shipped"],
-  Processing: ["Packed", "Shipped"],
-  Packed: ["Shipped"],
-  Shipped: ["Delivered"],
-};
 
 const steps = [
   "Confirmed",
@@ -42,26 +35,18 @@ export default function OrderDetailsPage() {
   const { id } = useParams();
 
   const { user } = useAuth();
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCancel, setShowCancel] = useState(false);
-  const [showReturn, setShowReturn] = useState(false);
   const [notice, setNotice] = useState("");
+
 
   async function reload() {
     const data = await getOrder(id);
     setOrder(data);
   }
 
-  async function handleStatus(status) {
-    try {
-      await adminUpdateStatus(id, status);
-      setNotice(`Order marked ${status}.`);
-      await reload();
-    } catch (e) {
-      setNotice(e?.response?.data?.message || "Could not update status.");
-    }
-  }
 
   async function handleCancel(reason) {
     const res = await cancelOrder(id, reason);
@@ -70,12 +55,6 @@ export default function OrderDetailsPage() {
     await reload();
   }
 
-  async function handleReturn(payload) {
-    const res = await requestReturn(id, payload);
-    setShowReturn(false);
-    setNotice(res.refundNote ? `Return submitted. ${res.refundNote}` : "Return request submitted.");
-    await reload();
-  }
 
   useEffect(() => {
     async function load() {
@@ -145,12 +124,12 @@ export default function OrderDetailsPage() {
           </button>
         )}
         {order.orderStatus === "Delivered" && (!order.returnRequest || order.returnRequest.status === "None") && (
-          <button
-            onClick={() => setShowReturn(true)}
+          <Link
+            href={`/returns/${id}`}
             className="rounded-xl border-2 border-[#33231A] px-5 py-2.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-[#33231A] transition-colors hover:bg-[#33231A] hover:text-white"
           >
-            Return Order
-          </button>
+            Request Return
+          </Link>
         )}
         {order.orderStatus === "Cancelled" && (
           <span className="rounded-full bg-[#B8352C]/10 px-4 py-1.5 text-[13px] font-semibold text-[#B8352C]">
@@ -169,32 +148,11 @@ export default function OrderDetailsPage() {
         )}
       </div>
 
-      {/* Admin: advance fulfillment status */}
-      {user?.isAdmin && NEXT_STATUS[order.orderStatus] && (
-        <div className="mb-5 rounded-xl border border-[#A5793A]/30 bg-[#A5793A]/5 p-4">
-          <p className="mb-2 text-[12px] font-bold uppercase tracking-[0.06em] text-[#33231A]">
-            Admin · Update status
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {NEXT_STATUS[order.orderStatus].map((s) => (
-              <button
-                key={s}
-                onClick={() => handleStatus(s)}
-                className="rounded-lg bg-[#33231A] px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-white transition-colors hover:bg-[#4A3526]"
-              >
-                Mark {s}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {showCancel && (
         <CancelModal order={order} onClose={() => setShowCancel(false)} onConfirm={handleCancel} />
       )}
-      {showReturn && (
-        <ReturnModal order={order} onClose={() => setShowReturn(false)} onConfirm={handleReturn} />
-      )}
+
 
       <div className="bg-white rounded-xl shadow border p-6">
 

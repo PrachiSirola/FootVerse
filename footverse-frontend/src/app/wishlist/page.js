@@ -64,11 +64,11 @@ export default function WishlistPage() {
     <>
       <Navbar />
       <div className="mx-auto max-w-[1500px] px-5 py-10 sm:px-8">
-        <h1 className="font-playfair text-4xl font-bold text-[#33231A]">Your Wishlist ❤️</h1>
+        <h1 className="font-sans text-4xl font-bold text-[#33231A]">Your Wishlist ❤️</h1>
 
         {ready && !loading && cards.length === 0 ? (
           <div className="mx-auto max-w-lg py-20 text-center">
-            <p className="font-playfair text-2xl font-bold text-[#33231A]">Nothing saved yet</p>
+            <p className="font-sans text-2xl font-bold text-[#33231A]">Nothing saved yet</p>
             <p className="mt-2 text-sm text-[#6E655C]">Tap the ♥ on any product to keep it here.</p>
             <Link href="/products" className="mt-7 inline-block rounded-lg bg-[#33231A] px-8 py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#4A3526]">
               Browse Products

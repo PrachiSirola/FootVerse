@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import QuantityInput from "@/components/ui/QuantityInput";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { usd } from "@/lib/format";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 
 export default function CartPage() {
   const {
@@ -16,7 +19,20 @@ export default function CartPage() {
   const { user } = useAuth();
   const router = useRouter();
 
+  // B2B minimum order value — fetched from the backend so it stays in sync with
+  // the server-side rule (which is the one that actually enforces it).
+  const [MIN_ORDER, setMinOrder] = useState(600);
+  useEffect(() => {
+    api.get("/orders/config")
+      .then((r) => setMinOrder(Number(r.data?.minOrderValue) || 600))
+      .catch(() => {}); // fall back to the default if the call fails
+  }, []);
+
+  const meetsMinimum = subtotal >= MIN_ORDER;
+  const shortfall = Math.max(0, MIN_ORDER - subtotal);
+
   const goToCheckout = () => {
+    if (!meetsMinimum) return; // B2B minimum not met
     if (!user) {
       router.push("/login?redirect=/checkout&reason=checkout");
       return;
@@ -100,31 +116,12 @@ export default function CartPage() {
                     Remove
                   </button>
 
-                  <div className="flex items-center rounded border">
-
-                    <button
-                      onClick={() =>
-                        setQty(item, item.qty - 1)
-                      }
-                      className="px-3 py-2"
-                    >
-                      −
-                    </button>
-
-                    <span className="px-4">
-                      {item.qty}
-                    </span>
-
-                    <button
-                      onClick={() =>
-                        setQty(item, item.qty + 1)
-                      }
-                      className="px-3 py-2"
-                    >
-                      +
-                    </button>
-
-                  </div>
+                  <QuantityInput
+                    value={item.qty}
+                    onChange={(n) => setQty(item, n)}
+                    stock={item.stock || 0}
+                    size="sm"
+                  />
 
                 </div>
 
@@ -160,13 +157,26 @@ export default function CartPage() {
             <span>{usd(subtotal)}</span>
           </div>
 
+          {/* B2B minimum order value */}
+          {!meetsMinimum && (
+            <div className="mt-5 rounded-xl border border-[#B8352C]/30 bg-[#B8352C]/5 p-4">
+              <p className="text-[13px] font-semibold text-[#B8352C]">
+                Minimum order value: {usd(MIN_ORDER)}
+              </p>
+              <p className="mt-1 text-[13px] text-[#6E655C]">
+                This is a wholesale (B2B) store. Add {usd(shortfall)} more to proceed to checkout.
+              </p>
+            </div>
+          )}
+
           <button
             onClick={goToCheckout}
-            className="mt-6 block w-full rounded-lg bg-[#33231A] py-3 text-center font-semibold text-white transition-colors hover:bg-[#4A3526]"
+            disabled={!meetsMinimum}
+            className="mt-6 block w-full rounded-lg bg-[#33231A] py-3 text-center font-semibold text-white transition-colors hover:bg-[#4A3526] disabled:cursor-not-allowed disabled:bg-[#33231A]/40 disabled:hover:bg-[#33231A]/40"
           >
-            Proceed to Checkout
+            {meetsMinimum ? "Proceed to Checkout" : `Add ${usd(shortfall)} more to checkout`}
           </button>
-          {!user && (
+          {!user && meetsMinimum && (
             <p className="mt-2 text-center text-xs text-[#6E655C]">Please log in to complete your purchase.</p>
           )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { useCart } from "@/context/CartContext";
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -14,6 +15,8 @@ function PaymentSuccessInner() {
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
+
+  const { clear } = useCart();
 
   useEffect(() => {
     if (!sessionId) {
@@ -42,6 +45,16 @@ function PaymentSuccessInner() {
         }
 
         setOrder(data.order);
+
+        // Payment CONFIRMED — clear the local cart so the UI (badge, drawer,
+        // cart page) updates instantly. The backend has already emptied the
+        // server-side cart; this just syncs the client state. It runs only on
+        // the success path — a failed payment throws above and never gets here.
+        try {
+          await clear();
+        } catch (e) {
+          console.warn("Cart refresh after payment failed:", e);
+        }
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -51,7 +64,7 @@ function PaymentSuccessInner() {
     }
 
     verifyPayment();
-  }, [sessionId]);
+  }, [sessionId, clear]);
 
   if (loading) {
     return (

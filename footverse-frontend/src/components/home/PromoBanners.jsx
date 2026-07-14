@@ -52,7 +52,7 @@ export default function PromoBanners() {
               className={`group flex h-52 flex-col justify-between overflow-hidden rounded-2xl p-7 transition-shadow duration-300 hover:shadow-[0_18px_44px_-20px_rgba(51,35,26,0.4)] ${b.className}`}
             >
               <div>
-                <h3 className={`font-playfair text-2xl font-bold leading-tight ${b.accent}`}>
+                <h3 className={`font-sans text-2xl font-bold leading-tight ${b.accent}`}>
                   {b.title}
                 </h3>
                 <p className="mt-2 max-w-[16rem] text-sm text-[#5B534B]">{b.subtitle}</p>

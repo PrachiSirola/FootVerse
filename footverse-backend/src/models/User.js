@@ -28,6 +28,21 @@ const UserSchema = new mongoose.Schema(
 
     isVerified: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
+
+    // Store credit / wallet (used by the admin Users module).
+    wallet: {
+      balance: { type: Number, default: 0 },
+      currency: { type: String, default: "USD" },
+      transactions: [
+        {
+          type: { type: String, enum: ["credit", "debit"], required: true },
+          amount: { type: Number, required: true },
+          reason: { type: String, default: "" },
+          at: { type: Date, default: Date.now },
+          by: { type: String, default: "" }, // admin who adjusted it
+        },
+      ],
+    },
     resetTokenHash: { type: String, default: null },
     resetTokenExpires: { type: Date, default: null },
   },
@@ -49,6 +64,9 @@ UserSchema.methods.toSafe = function () {
     avatar: this.avatar,
     addresses: this.addresses || [],
     isVerified: this.isVerified,
+    // The frontend needs this to gate /admin and to redirect admins after login.
+    isAdmin: !!this.isAdmin,
+    wallet: this.wallet || { balance: 0, currency: "USD", transactions: [] },
     createdAt: this.createdAt,
   };
 };

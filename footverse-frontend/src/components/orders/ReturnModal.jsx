@@ -59,7 +59,7 @@ export default function ReturnModal({ order, onClose, onConfirm }) {
         className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-playfair text-2xl font-bold text-[#33231A]">Return Order</h2>
+        <h2 className="font-sans text-2xl font-bold text-[#33231A]">Return Order</h2>
         <p className="mt-1 text-sm text-[#6E655C]">
           Order {order?.orderNumber}. Select a reason for your return.
         </p>

@@ -37,15 +37,15 @@ export default function RFQPage() {
         <p className="text-sm text-gray-400 mb-6">Need furniture in bulk? Fill in the details and we'll get back with competitive pricing.</p>
 
         <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <input required placeholder="Company Name" value={form.company} onChange={update("company")} className={fieldClass} />
             <input required placeholder="Contact Person" value={form.contact} onChange={update("contact")} className={fieldClass} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <input required placeholder="Email" type="email" value={form.email} onChange={update("email")} className={fieldClass} />
             <input required placeholder="Phone" value={form.phone} onChange={update("phone")} className={fieldClass} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-xs text-gray-500 mb-1">Category</label>
               <select value={form.category} onChange={update("category")} className={fieldClass}>

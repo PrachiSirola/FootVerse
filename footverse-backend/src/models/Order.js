@@ -87,7 +87,7 @@ const OrderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Stripe", "COD"],
+      enum: ["Stripe"], // B2B: card payment only (COD removed)
       default: "Stripe",
     },
 
@@ -161,12 +161,17 @@ const OrderSchema = new mongoose.Schema(
     returnRequest: {
       status: {
         type: String,
-        enum: ["None", "Requested", "Approved", "Rejected"],
+        // B2B return lifecycle:
+        //   Requested → Approved → Item Received → Refunded (happy path)
+        //   Requested → Rejected                            (terminal)
+        enum: ["None", "Requested", "Approved", "Item Received", "Rejected", "Refunded"],
         default: "None",
       },
       reason: { type: String, default: null },
       comments: { type: String, default: null },
-      // COD refunds need bank/UPI details from the customer
+      contact: { type: String, default: null },   // phone/email for follow-up
+      amountPaid: { type: Number, default: 0 },   // server-side copy of grandTotal
+      // Refund payout details (kept for manual/bank refunds if ever needed)
       bankDetails: {
         accountName: { type: String, default: null },
         accountNumber: { type: String, default: null },
@@ -174,6 +179,8 @@ const OrderSchema = new mongoose.Schema(
         upiId: { type: String, default: null },
       },
       requestedAt: { type: Date, default: null },
+      approvedAt: { type: Date, default: null },
+      itemReceivedAt: { type: Date, default: null }, // goods back in our hands
       resolvedAt: { type: Date, default: null },
       adminNote: { type: String, default: null },
     },

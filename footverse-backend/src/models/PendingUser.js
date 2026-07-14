@@ -11,6 +11,10 @@ const PendingUserSchema = new mongoose.Schema(
     email: { type: String, required: true, lowercase: true, trim: true, unique: true },
     passwordHash: { type: String, required: true }, // already bcrypt-hashed
     otpHash: { type: String, required: true },      // bcrypt hash of the 6-digit OTP
+    // Set at REGISTRATION when a valid admin secret was supplied. Carried through
+    // the OTP step and applied when the real User is created. The secret itself
+    // is NEVER stored — only this boolean result.
+    isAdmin: { type: Boolean, default: false },
     otpPlain: { type: String },                      // DEV ONLY: plaintext OTP for local visibility
     otpExpires: { type: Date, required: true },      // OTP validity (5 min)
     attempts: { type: Number, default: 0 },          // wrong-OTP guard

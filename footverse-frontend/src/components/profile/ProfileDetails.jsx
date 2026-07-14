@@ -13,7 +13,7 @@ function Avatar({ user, onUpload, uploading }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
         ) : (
-          <span className="font-playfair text-3xl font-bold text-[#A5793A]">{initial}</span>
+          <span className="font-sans text-3xl font-bold text-[#A5793A]">{initial}</span>
         )}
       </div>
       <label className="absolute -bottom-1 -right-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#33231A] text-white shadow-md transition-colors hover:bg-[#4A3526]" title="Change photo">
@@ -60,7 +60,7 @@ export default function ProfileDetails() {
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
           <Avatar user={user} onUpload={onUpload} uploading={uploading} />
           <div className="text-center sm:text-left">
-            <h2 className="font-playfair text-2xl font-bold capitalize text-[#33231A]">{user?.name}</h2>
+            <h2 className="font-sans text-2xl font-bold capitalize text-[#33231A]">{user?.name}</h2>
             <p className="text-sm text-[#6E655C]">{user?.email}</p>
             <span className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${user?.isVerified ? "bg-[#2F7C4A]/12 text-[#2F7C4A]" : "bg-[#A5793A]/12 text-[#A5793A]"}`}>
               {user?.isVerified ? "✓ Verified" : "Unverified"}

@@ -83,7 +83,8 @@ export function CartProvider({ children }) {
     setItems((prev) => {
       const k = lineKey(line);
       const hit = prev.find((i) => lineKey(i) === k);
-      if (hit) return prev.map((i) => (lineKey(i) === k ? { ...i, qty: Math.min(99, i.qty + qty) } : i));
+      // B2B: no upper cap on quantity (wholesale orders can be large).
+      if (hit) return prev.map((i) => (lineKey(i) === k ? { ...i, qty: i.qty + qty } : i));
       return [...prev, { ...line, qty }];
     });
 
@@ -137,7 +138,8 @@ export function CartProvider({ children }) {
   const addItem = (product, qty = 1) => add(product, qty);
 
   const setQty = async (item, qty) => {
-    qty = Math.min(99, qty);
+    // B2B: no upper cap — only enforce a minimum of 1.
+    qty = Math.max(1, Number(qty) || 1);
     if (isLoggedIn()) {
       try {
         const r = await api.patch("/cart/items", {

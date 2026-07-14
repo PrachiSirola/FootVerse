@@ -14,7 +14,9 @@ export function transformCJLive(raw, category = "", subcategory = "") {
   // Resolve the REAL category/subcategory from the product name so broad keyword
   // searches don't mix Men/Women/Kids. Falls back to the keyword's guess.
   const resolvedCategory = classifyCategory(name, category);
-  const resolvedSub = classifySubcategory(name, subcategory);
+  // Pass the RESOLVED category through — classifySubcategory needs it for the
+  // "Men's leather → Formal" rule, which otherwise never fires.
+  const resolvedSub = classifySubcategory(name, subcategory, resolvedCategory);
 
   return {
     // Use the CJ product id as the stable id the frontend routes on.

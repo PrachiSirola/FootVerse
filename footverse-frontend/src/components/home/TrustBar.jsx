@@ -1,6 +1,6 @@
 const FEATURES = [
   { title: "Free Shipping", sub: "On orders over $50", icon: "truck" },
-  { title: "30-Day Returns", sub: "Hassle-free returns", icon: "refresh" },
+  { title: "Premium Quality", sub: "Carefully selected footwear", icon: "refresh" },
   { title: "Secure Payment", sub: "100% secure checkout", icon: "lock" },
   { title: "24/7 Support", sub: "We're here to help", icon: "headset" },
 ];

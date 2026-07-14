@@ -24,7 +24,7 @@ export default function Testimonials() {
               “{t.quote}”
             </blockquote>
             <figcaption className="mt-5 flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#A5793A]/15 font-playfair text-base font-bold text-[#A5793A]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#A5793A]/15 font-sans text-base font-bold text-[#A5793A]">
                 {t.name[0]}
               </span>
               <span>

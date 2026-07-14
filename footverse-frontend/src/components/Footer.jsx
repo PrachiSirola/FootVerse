@@ -13,7 +13,7 @@ export default function Footer() {
     <footer className="mt-20 bg-[#33231A] text-white">
       <div className="mx-auto grid max-w-[1500px] gap-10 px-5 py-14 sm:px-8 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-playfair text-[26px] font-bold leading-none">
+          <p className="font-sans text-[26px] font-bold leading-none">
             Foot<span className="text-[#D9B87A]">Verse</span>
           </p>
           <p className="mt-1.5 text-[11px] tracking-[0.02em] text-white/60">Your Universe of Footwear</p>

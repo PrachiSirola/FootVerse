@@ -27,7 +27,7 @@ export default function CategoryGrid() {
                 href={`/products?category=${c.slug}`}
                 className="group flex flex-col items-center rounded-2xl bg-white p-6 text-center shadow-[0_8px_28px_-16px_rgba(51,35,26,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-16px_rgba(51,35,26,0.35)]"
               >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#F1ECE2] font-playfair text-2xl font-bold text-[#33231A] transition-colors duration-300 group-hover:bg-[#A5793A] group-hover:text-white">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#F1ECE2] font-sans text-2xl font-bold text-[#33231A] transition-colors duration-300 group-hover:bg-[#A5793A] group-hover:text-white">
                   {INITIALS[c.slug]}
                 </span>
                 <span className="mt-4 text-sm font-semibold text-[#33231A]">{c.name}</span>

@@ -1,28 +1,26 @@
 import cron from "node-cron";
-import { invalidateProductCache } from "../utils/cache.js";
-import { isReady } from "../config/redisClient.js";
-import { buildPool } from "../services/cjPoolService.js";
 
 /**
- * Hourly: clear product cache, then rebuild the CJ pool from the live CJ API.
- * Rebuilding the pool re-warms listings, facets, featured, search, and related
- * (they all derive from the pool). Safe if Redis is down — buildPool still
- * returns fresh data to callers; it just won't persist.
+ * DISABLED — this job was a SECOND, independent hourly crawler.
+ *
+ * It called buildPool() directly, which:
+ *   - bypassed productStore entirely (so the atomic-swap and
+ *     never-serve-an-incomplete-pool guards did nothing against it),
+ *   - wiped the product cache every hour, and
+ *   - re-crawled CJ every hour, on top of productSyncService already doing so.
+ *
+ * That is what produced the fluctuating product counts (5000 → 2000 → 500), the
+ * empty categories, and the constant CJ rate-limit pressure.
+ *
+ * productSyncService is now the single owner of refreshing the catalogue. This
+ * file is kept as a no-op so nothing that imports it breaks.
  */
 async function refreshNow() {
-  console.log("[cache REFRESH] hourly CJ pool rebuild starting…");
-  try {
-    if (isReady()) await invalidateProductCache();
-    await buildPool();
-    console.log("[cache REFRESH] hourly CJ pool rebuild complete");
-  } catch (err) {
-    console.warn(`[cache ERROR] refresh: ${err.message}`);
-  }
+  console.log("[cache REFRESH] disabled — productSyncService owns catalogue refresh");
 }
 
 export function startCacheRefreshJob() {
-  cron.schedule("0 * * * *", refreshNow); // minute 0 each hour
-  console.log("[cache] hourly CJ pool refresh scheduled");
+  console.log("[cache] hourly refresh job DISABLED (productSyncService handles it)");
 }
 
 export { refreshNow };

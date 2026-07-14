@@ -63,7 +63,7 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <div className="mx-auto max-w-[1300px] px-5 py-10 sm:px-8">
-        <h1 className="font-playfair text-4xl font-bold text-[#33231A]">My Account</h1>
+        <h1 className="font-sans text-4xl font-bold text-[#33231A]">My Account</h1>
         <p className="mt-1 text-sm text-[#6E655C]">Manage your profile, orders, and preferences.</p>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">

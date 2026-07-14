@@ -11,7 +11,8 @@ const CartItemSchema = new mongoose.Schema(
     productId: { type: String, required: true },
     size: { type: String, default: "" },
     color: { type: String, default: "" },
-    qty: { type: Number, default: 1, min: 1, max: 99 },
+    // B2B: no upper cap on quantity (wholesale orders can be large).
+    qty: { type: Number, default: 1, min: 1 },
     name: { type: String, default: "" },
     image: { type: String, default: "" },
     price: { type: Number, default: 0 },

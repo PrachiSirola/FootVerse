@@ -66,12 +66,12 @@ export default function Navbar() {
       className="relative z-40 border-b border-[#33231A]/10 bg-white"
     >
       <nav
-        className="relative mx-auto flex h-[84px] max-w-[1500px] items-center justify-between px-5 sm:px-8"
+        className="relative mx-auto flex h-[84px] max-w-[1500px] items-center gap-4 px-5 sm:px-8 lg:gap-6"
         aria-label="Primary"
       >
         {/* Wordmark */}
-        <Link href="/" className="flex flex-col">
-          <span className="font-playfair text-[28px] font-bold leading-none tracking-tight sm:text-[30px]">
+        <Link href="/" className="flex shrink-0 flex-col">
+          <span className="font-sans text-[28px] font-bold leading-none tracking-tight sm:text-[30px]">
             <span className="text-[#33231A]">Foot</span>
             <span className="text-[#A5793A]">Verse</span>
           </span>
@@ -81,7 +81,7 @@ export default function Navbar() {
         </Link>
 
         {/* Centered menu */}
-        <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 lg:flex xl:gap-11">
+        <ul className="hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex xl:gap-9">
           {NAV_LINKS.map((item) => (
             <li 
               key={item.label}
@@ -93,7 +93,7 @@ export default function Navbar() {
                 <>
                   <button 
                     type="button"
-                    className="flex items-center gap-1 text-[13px] font-medium uppercase tracking-[0.06em] text-[#33231A] transition-colors duration-300 hover:text-[#A5793A]">
+                    className="flex items-center gap-1 whitespace-nowrap text-[12px] font-medium uppercase tracking-[0.05em] text-[#33231A] transition-colors duration-300 hover:text-[#A5793A] xl:text-[13px] xl:tracking-[0.06em]">
                     Categories
                     <motion.span
                       animate={{ rotate: showMegaMenu ? 180 : 0 }}
@@ -123,7 +123,7 @@ export default function Navbar() {
         </ul>
 
         {/* Right-side icons */}
-        <div className="flex items-center gap-5 sm:gap-6">
+        <div className="flex shrink-0 items-center gap-3.5 sm:gap-5 lg:gap-4 xl:gap-6">
           <button
             type="button"
             aria-label="Search"
@@ -136,6 +136,23 @@ export default function Navbar() {
               <path d="m20 20-3.8-3.8" />
             </svg>
           </button>
+
+          {/* Admin only — a quick switch into the dashboard. Regular users never
+              see this; the admin panel itself is also route-guarded. */}
+          {user?.isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center text-[#33231A] transition-colors hover:text-[#A5793A]"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+              </svg>
+              <span className="hidden sm:inline"></span>
+            </Link>
+          )}
 
           <Link href="/wishlist" aria-label={`Wishlist, ${wishReady ? wishCount : 0} items`} className="relative text-[#33231A] transition-colors hover:text-[#A5793A]">
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

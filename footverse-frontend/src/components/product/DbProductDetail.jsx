@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import QuantityInput from "@/components/ui/QuantityInput";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -109,7 +110,7 @@ export default function DbProductDetail({ id }) {
   if (error || !product) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <h1 className="font-playfair text-3xl font-bold text-[#33231A]">Product not found</h1>
+        <h1 className="font-sans text-3xl font-bold text-[#33231A]">Product not found</h1>
         <Link href="/products" className="mt-4 inline-block text-[#A5793A] hover:underline">
           Browse all products
         </Link>
@@ -172,7 +173,7 @@ export default function DbProductDetail({ id }) {
           <div className="flex items-center gap-2">
             {product.brand ? (
               <>
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#A5793A] font-playfair text-[11px] font-bold text-white">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#A5793A] font-sans text-[11px] font-bold text-white">
                   {product.brand[0]}
                 </span>
                 <span className="text-[13px] font-semibold text-[#33231A]">{product.brand}</span>
@@ -185,7 +186,7 @@ export default function DbProductDetail({ id }) {
             )}
           </div>
 
-          <h1 className="mt-2.5 font-playfair text-[30px] font-bold leading-tight text-[#33231A] sm:text-[34px]">
+          <h1 className="mt-2.5 font-sans text-[30px] font-bold leading-tight text-[#33231A] sm:text-[34px]">
             {product.name}
           </h1>
 
@@ -228,13 +229,12 @@ export default function DbProductDetail({ id }) {
             </div>
           )}
 
-          {/* Qty */}
-          <div className="mt-6 flex items-center gap-3">
-            <div className="flex items-center rounded-full bg-[#33231A] px-1.5 py-1 text-white">
-              <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} className="px-2.5 text-base leading-none" aria-label="Decrease quantity">−</button>
-              <span className="w-6 text-center text-sm font-semibold">{qty}</span>
-              <button type="button" onClick={() => setQty(Math.min(9, qty + 1))} className="px-2.5 text-base leading-none" aria-label="Increase quantity">+</button>
-            </div>
+          {/* Qty — B2B: typeable, no upper cap */}
+          <div className="mt-6">
+            <label className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6E655C]">
+              Quantity
+            </label>
+            <QuantityInput value={qty} onChange={setQty} stock={product?.stock || 0} />
           </div>
 
           {/* Actions */}

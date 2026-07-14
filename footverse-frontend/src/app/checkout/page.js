@@ -29,7 +29,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: user?.name || "", email: user?.email || "", phone: "",
-    address: "", city: "", state: "", pin: "", payment: "online",
+    address: "", city: "", state: "", pin: "", payment: "online", // B2B: card only
   });
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
@@ -41,31 +41,6 @@ export default function CheckoutPage() {
   async function handlePlace(e) {
     e.preventDefault();
     setError("");
-
-    // ---- Cash on Delivery ----
-    if (form.payment === "cod") {
-      const customer = {
-        name: form.name, email: form.email, phone: form.phone,
-        address: form.address, city: form.city, state: form.state, pin: form.pin,
-      };
-      // Logged in → real DB order (server prices). Guest → local confirmation.
-      if (user && getToken()) {
-        setBusy(true);
-        try {
-          const r = await api.post("/orders/cod", { customer });
-          await clear();
-          setPlaced(r.data.order);
-        } catch (err) {
-          setError(err.response?.data?.message || "Could not place order — is the API running?");
-        } finally {
-          setBusy(false);
-        }
-      } else {
-        await clear();
-        setPlaced({ orderNumber: `FV${Date.now().toString().slice(-8)}`, paymentMethod: "COD", grandTotal });
-      }
-      return;
-    }
 
     // ---- Online payment (Stripe) ----
     setBusy(true);
@@ -89,15 +64,15 @@ export default function CheckoutPage() {
     }
   }
 
-  // ---- COD success ----
+  // ---- Order placed ----
   if (placed) {
     return (
       <div className="mx-auto max-w-lg px-5 py-24 text-center">
         <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#A5793A]/15 text-3xl text-[#A5793A]">✓</div>
-        <h1 className="font-playfair text-3xl font-bold text-[#33231A]">Order Placed Successfully</h1>
+        <h1 className="font-sans text-3xl font-bold text-[#33231A]">Order Placed Successfully</h1>
         <p className="mt-3 text-[#6E655C]">
           Order <span className="font-semibold text-[#33231A]">#{placed.orderNumber}</span>
-          {placed.paymentMethod === "COD" ? " — pay cash on delivery." : "."}
+          {"."}
         </p>
         <div className="mt-8 flex justify-center gap-3">
           <Link href="/orders" className="rounded-lg bg-[#33231A] px-7 py-3 text-[13px] font-semibold uppercase tracking-[0.1em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#4A3526]">
@@ -115,7 +90,7 @@ export default function CheckoutPage() {
   if (detailed.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-24 text-center">
-        <h1 className="font-playfair text-3xl font-bold text-[#33231A]">Nothing to checkout</h1>
+        <h1 className="font-sans text-3xl font-bold text-[#33231A]">Nothing to checkout</h1>
         <Link href="/products" className="mt-4 inline-block text-[#A5793A] hover:underline">Back to Shop</Link>
       </div>
     );
@@ -129,19 +104,19 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-10">
-      <h1 className="mb-8 font-playfair text-3xl font-bold text-[#33231A]">Checkout</h1>
+      <h1 className="mb-8 font-sans text-3xl font-bold text-[#33231A]">Checkout</h1>
       <form onSubmit={handlePlace} className="flex flex-col gap-8 lg:flex-row">
         {/* LEFT */}
         <div className="flex-1 space-y-6">
           <div className="rounded-xl border border-[#33231A]/10 bg-white p-6">
             <h2 className="mb-5 text-lg font-semibold text-[#33231A]">Shipping Details</h2>
             <input required placeholder="Full Name" value={form.name} onChange={update("name")} className={inputClass} />
-            <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <input required type="email" placeholder="Email" value={form.email} onChange={update("email")} className={inputClass} />
               <input required placeholder="Phone" value={form.phone} onChange={update("phone")} className={inputClass} />
             </div>
             <input required placeholder="Street Address" value={form.address} onChange={update("address")} className={`${inputClass} mt-4`} />
-            <div className="mt-4 grid grid-cols-3 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <input required placeholder="City" value={form.city} onChange={update("city")} className={inputClass} />
               <input required placeholder="State" value={form.state} onChange={update("state")} className={inputClass} />
               <input required placeholder="PIN Code" value={form.pin} onChange={update("pin")} className={inputClass} />
@@ -150,19 +125,15 @@ export default function CheckoutPage() {
 
           <div className="rounded-xl border border-[#33231A]/10 bg-white p-6">
             <h2 className="mb-4 text-lg font-semibold text-[#33231A]">Payment Method</h2>
-            <label className="mb-3 flex items-center gap-2">
-              <input type="radio" value="online" checked={form.payment === "online"} onChange={update("payment")} className="accent-[#A5793A]" />
-              <span>Online Payment (Card via Stripe)</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" value="cod" checked={form.payment === "cod"} onChange={update("payment")} className="accent-[#A5793A]" />
-              <span>Cash On Delivery</span>
-            </label>
-            {!user && form.payment === "cod" && (
-              <p className="mt-3 rounded-lg bg-[#F7F4EF] p-3 text-[12px] text-[#6E655C]">
-                Tip: <Link href="/login" className="font-semibold text-[#A5793A] hover:underline">sign in</Link> to save this COD order to your account and see it under Orders.
-              </p>
-            )}
+            <div className="flex items-center gap-3 rounded-lg border border-[#A5793A]/30 bg-[#A5793A]/5 p-4">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-[#A5793A]" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold text-[#33231A]">Card Payment (Stripe)</p>
+                <p className="text-[12px] text-[#6E655C]">
+                  Secure card payment. All FootVerse wholesale orders are paid online.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

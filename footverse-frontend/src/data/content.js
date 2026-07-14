@@ -9,7 +9,7 @@ export const FAQS = [
   { q: "How long does delivery take?", a: "Metro cities receive orders in 2–4 business days; the rest of India in 4–7. Express shipping is free on orders above $50." },
   { q: "How do I find my correct size?", a: "Every product page includes a size chart with foot-length measurements in centimetres. If you're between sizes, we recommend sizing up for sports shoes and staying true to size for formal styles." },
   { q: "Are all products genuine?", a: "Yes — FootVerse sources exclusively from authorised brand distributors. Every pair ships with original brand packaging and warranty where applicable." },
-  { q: "Do you offer Cash on Delivery?", a: "COD is available on most orders. You can verify COD availability at checkout." },
+  { q: "What payment methods do you accept?", a: "All FootVerse wholesale orders are paid securely online by card (via Stripe) at checkout." },
   { q: "Can I cancel or modify my order?", a: "Orders can be cancelled from the Orders page until they are shipped. To change the address or size after placing an order, contact support within 12 hours." },
   { q: "How do I care for my shoes?", a: "As a rule: keep leather away from direct heat, air out sports shoes after use, and use a shoe tree for formal pairs." },
   { q: "Do you ship internationally?", a: "Currently we deliver only within India. International shipping is on our roadmap — subscribe to the newsletter to be the first to know." },

@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import { cancelOrderAtCJ } from "./cjOrderService.js";
+import CancelledOrder from "../models/CancelledOrder.js";
 
 /** Statuses at which a user may still CANCEL (before shipping). */
 const CANCELLABLE = ["Pending", "Confirmed", "Processing", "Packed"];
@@ -59,7 +60,31 @@ export async function cancelOrder(orderId, { reason, by = "user", userId = null 
   }
 
   await order.save();
-  console.log(`[cancel] ${order.orderNumber} → cancelled in MongoDB ✓ (status: Cancelled)`);
+  const dbName = order.db?.name || order.constructor.db?.name || "unknown";
+  console.log(`[cancel] ${order.orderNumber} → orders collection updated to "Cancelled" ✓ (db: ${dbName})`);
+
+  // Archive a full copy into the CancelledOrder collection.
+  try {
+    const archived = await CancelledOrder.create({
+      originalOrderId: order._id,
+      orderNumber: order.orderNumber,
+      user: order.user,
+      reason: order.cancellation?.reason,
+      cancelledBy: order.cancellation?.cancelledBy,
+      cancelledAt: order.cancellation?.cancelledAt,
+      refund: {
+        status: order.refund?.status,
+        method: order.refund?.method,
+        amount: order.refund?.amount,
+      },
+      snapshot: order.toObject(),
+    });
+    const total = await CancelledOrder.countDocuments();
+    console.log(`[cancel] ${order.orderNumber} → archived to 'cancelledorders' ✓ (_id=${archived._id}, collection now has ${total})`);
+  } catch (err) {
+    console.error(`[cancel] ${order.orderNumber} → CancelledOrder archive FAILED: ${err.message}`);
+    console.error(`[cancel] full error:`, err);
+  }
 
   // Cancel at CJ — only if it actually synced there.
   let cjResult = "not-applicable";
@@ -96,9 +121,9 @@ export async function cancelOrder(orderId, { reason, by = "user", userId = null 
 
 /**
  * User submits a RETURN request (only after Delivered).
- * COD → requires bank/UPI details. Online → refund to original method.
+ * B2B: all orders are card (Stripe) — refunds go to the original payment method.
  */
-export async function requestReturn(orderId, { reason, comments, bankDetails, userId }) {
+export async function requestReturn(orderId, { reason, comments, bankDetails, contact, userId }) {
   const order = await Order.findById(orderId);
   if (!order) return { ok: false, status: 404, message: "Order not found" };
   if (userId && String(order.user) !== String(userId)) {
@@ -112,8 +137,9 @@ export async function requestReturn(orderId, { reason, comments, bankDetails, us
   }
   if (!reason) return { ok: false, status: 400, message: "Return reason is required." };
 
-  // COD refunds need bank/UPI details.
-  const isCOD = order.paymentMethod === "COD";
+  // B2B: card-only, so refunds always go back to the original payment method.
+  // (isCOD is retained as `false` so any legacy COD orders still resolve safely.)
+  const isCOD = order.paymentMethod === "COD"; // legacy orders only
   if (isCOD) {
     const b = bankDetails || {};
     const hasUpi = !!b.upiId;
@@ -131,6 +157,9 @@ export async function requestReturn(orderId, { reason, comments, bankDetails, us
     status: "Requested",
     reason,
     comments: comments || null,
+    contact: contact || null,
+    // Amount is taken from the ORDER (server-side truth), never from the client.
+    amountPaid: order.grandTotal,
     bankDetails: isCOD ? bankDetails : {},
     requestedAt: new Date(),
     resolvedAt: null,
@@ -158,29 +187,78 @@ export async function requestReturn(orderId, { reason, comments, bankDetails, us
 /* ---------------- ADMIN ---------------- */
 
 /** Admin approves or rejects a return request. */
+/**
+ * The B2B return state machine. Each step is only valid from the step before it,
+ * so a return can't be refunded before the goods are back.
+ *
+ *   Requested ──approve──> Approved ──receive──> Item Received ──refund──> Refunded
+ *        └────reject────> Rejected  (terminal)
+ */
+const RETURN_FLOW = {
+  Requested: ["Approved", "Rejected"],
+  Approved: ["Item Received"],
+  "Item Received": ["Refunded"],
+  Rejected: [],
+  Refunded: [],
+};
+
+/** Admin advances a return to its next valid state. */
 export async function resolveReturn(orderId, { decision, adminNote }) {
   const order = await Order.findById(orderId);
   if (!order) return { ok: false, status: 404, message: "Order not found" };
-  if (order.returnRequest?.status !== "Requested") {
-    return { ok: false, status: 400, message: "No pending return request." };
+
+  const current = order.returnRequest?.status;
+  if (!current || current === "None") {
+    return { ok: false, status: 400, message: "This order has no return request." };
   }
-  if (!["Approved", "Rejected"].includes(decision)) {
-    return { ok: false, status: 400, message: "Decision must be Approved or Rejected." };
+
+  const allowed = RETURN_FLOW[current] || [];
+  if (!allowed.includes(decision)) {
+    return {
+      ok: false,
+      status: 400,
+      message: allowed.length
+        ? `A ${current} return can only move to: ${allowed.join(" or ")}.`
+        : `This return is already ${current} — no further action is possible.`,
+    };
   }
 
   order.returnRequest.status = decision;
-  order.returnRequest.resolvedAt = new Date();
-  order.returnRequest.adminNote = adminNote || null;
+  order.returnRequest.adminNote = adminNote || order.returnRequest.adminNote || null;
+  const note = adminNote || "";
 
-  if (decision === "Approved") {
-    order.orderStatus = "Returned";
-    order.refund.status = "Processing";
-    pushTimeline(order, "Return Approved", adminNote || "Refund is being processed.");
-  } else {
-    pushTimeline(order, "Return Rejected", adminNote || "Return request rejected.");
+  switch (decision) {
+    case "Approved":
+      order.returnRequest.approvedAt = new Date();
+      // The customer is told to send the goods back; no money moves yet.
+      order.refund.status = "Pending";
+      pushTimeline(order, "Return Approved", note || "Approved — awaiting the returned item.");
+      break;
+
+    case "Item Received":
+      order.returnRequest.itemReceivedAt = new Date();
+      order.orderStatus = "Returned";           // goods are back with us
+      order.refund.status = "Processing";       // now the refund can be processed
+      pushTimeline(order, "Item Received", note || "Returned item received — processing the refund.");
+      break;
+
+    case "Refunded":
+      order.returnRequest.resolvedAt = new Date();
+      order.refund.status = "Refunded";
+      order.refund.processedAt = new Date();
+      pushTimeline(order, "Refunded", note || `Refund of ${order.refund?.amount ?? ""} completed.`);
+      break;
+
+    case "Rejected":
+      order.returnRequest.resolvedAt = new Date();
+      order.refund.status = "None";             // no money moves on a rejection
+      pushTimeline(order, "Return Rejected", note || "Return request rejected.");
+      break;
   }
+
   await order.save();
-  return { ok: true, order, message: `Return ${decision.toLowerCase()}.` };
+  console.log(`[return] ${order.orderNumber}: ${current} → ${decision}`);
+  return { ok: true, order, message: `Return marked ${decision}.` };
 }
 
 /** Admin marks a refund as completed. */

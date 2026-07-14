@@ -9,6 +9,8 @@ import cartRoutes from "./routes/cartRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import issueRoutes from "./routes/issueRoutes.js";
 
 const app = express();
 
@@ -64,9 +66,23 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/cj", cjRoutes);
 
 
-// Payments (Stripe) + Orders (COD, my-orders, lookup)
+// Payments (Stripe) + Orders (my-orders, lookup)
 app.use("/api/payments", paymentRoutes);
 app.use("/api/orders", orderRoutes);
+
+// Admin panel (all endpoints admin-only) + customer issues
+app.use("/api/admin", adminRoutes);
+app.use("/api/issues", issueRoutes);
+
+// Public: the storefront reads the hero banner the admin edits in the CMS.
+app.get("/api/cms/hero", async (_req, res) => {
+  try {
+    const { getHero } = await import("./services/cmsService.js");
+    res.json({ success: true, hero: await getHero() });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
 
 /* ===========================
    Health Check

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { CATEGORIES as STATIC_CATEGORIES } from "@/data/categories";
 
-const SIZE_CHIPS = ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11", "UK 3", "UK 4", "UK 5", "Free Size"];
 
 function Section({ title, children }) {
   return (
@@ -60,15 +59,8 @@ export default function FilterSidebar() {
     };
   }, []);
 
-  const toggleInList = (key, value) => {
-    const list = (sp.get(key) || "").split(",").filter(Boolean);
-    const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
-    set(key, next.join(","));
-  };
-
   const activeCat = sp.get("category") || "";
   const cat = categories.find((c) => c.slug === activeCat);
-  const sizes = (sp.get("size") || "").split(",").filter(Boolean);
 
   return (
     <aside className="w-full">
@@ -143,21 +135,6 @@ export default function FilterSidebar() {
               className="rounded-full border border-[#33231A]/15 px-3 py-1 text-[11.5px] text-[#33231A] transition-colors hover:border-[#A5793A] hover:text-[#A5793A]"
             >
               {hi ? `$${lo}–$${hi}` : `$${lo}+`}
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Size">
-        <div className="flex flex-wrap gap-2">
-          {SIZE_CHIPS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => toggleInList("size", s)}
-              className={`rounded-lg border px-2.5 py-1.5 text-[12px] transition-colors ${sizes.includes(s) ? "border-[#33231A] bg-[#33231A] text-white" : "border-[#33231A]/15 text-[#33231A] hover:border-[#A5793A]"}`}
-            >
-              {s}
             </button>
           ))}
         </div>

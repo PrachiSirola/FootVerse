@@ -143,70 +143,22 @@ import { syncOrderToCJInBackground } from "./cjOrderService.js";
 /** Round money to 2 decimals (USD cents precision). */
 function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 
-const TAX_RATE = 0; // no tax (USD store)
-const FREE_SHIPPING_ABOVE = 50; // USD
-const SHIPPING_FEE = 5; // USD flat
-
-export async function createCodOrderForUser(uid, customer = {}) {
-  const cart = await Cart.findOne({ user: uid });
-  if (!cart || cart.items.length === 0) {
-    const e = new Error("Your cart is empty.");
-    e.status = 400;
-    throw e;
+/**
+ * B2B minimum order value (USD). FootVerse is a wholesale/B2B store, so orders
+ * below this threshold are rejected. Configurable via MIN_ORDER_VALUE.
+ * $600 ≈ ₹50,000.
+ */
+export const MIN_ORDER_VALUE = Number(process.env.MIN_ORDER_VALUE || 600);
+function assertMinimumOrder(subtotal) {
+  if (subtotal < MIN_ORDER_VALUE) {
+    const err = new Error(
+      `Minimum order value is $${MIN_ORDER_VALUE}. Your cart total is $${round2(subtotal)}.`
+    );
+    err.status = 400;
+    throw err;
   }
-
-  const items = cart.items.map((i) => ({
-    productId: i.productId,
-    size: i.size || "",
-    color: i.color || "",
-    name: i.name || "",
-    image: i.image || "",
-    price: Number(i.price) || 0,
-    quantity: i.qty,
-    subtotal: (Number(i.price) || 0) * i.qty,
-  }));
-
-  if (items.length === 0) {
-    const e = new Error("Cart items are no longer available.");
-    e.status = 400;
-    throw e;
-  }
-
-  const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
-  const tax = round2(subtotal * TAX_RATE);
-  const shippingCharge = subtotal > FREE_SHIPPING_ABOVE ? 0 : SHIPPING_FEE;
-  const grandTotal = round2(subtotal + tax + shippingCharge);
-
-  const order = await Order.create({
-    user: uid,
-    orderNumber: generateOrderNumber(),
-    paymentMethod: "COD",
-    customer,
-    items,
-    subtotal,
-    tax,
-    shippingCharge,
-    discount: 0,
-    grandTotal,
-    currency: "USD",
-    paymentStatus: "Pending",
-    orderStatus: "Confirmed",
-  });
-
-  // empty the cart now that the order exists
-  cart.items = [];
-  await cart.save();
-
-  // Sync to CJ in the background — customer doesn't wait on it.
-  console.log(`[order] COD order ${order.orderNumber} SAVED to Mongo:`);
-  console.log(`         _id=${order._id}  user=${order.user}  status=${order.orderStatus}`);
-  // Immediately verify it's queryable by the same filter history uses.
-  const check = await Order.countDocuments({ user: uid });
-  console.log(`[order] this user (${uid}) now has ${check} order(s) in Mongo`);
-  syncOrderToCJInBackground(order._id);
-
-  return order;
 }
+
 
 export async function getOrdersForUser(uid) {
   const orders = await Order.find({ user: uid }).sort({ createdAt: -1 });
@@ -254,6 +206,7 @@ export async function createPendingOrder({ items = [], customer = {}, userId = n
   }
 
   const subtotal = norm.reduce((s, i) => s + i.subtotal, 0);
+  assertMinimumOrder(subtotal); // B2B: reject orders under the minimum
   const tax = round2(subtotal * TAX_RATE_STRIPE);
   const shippingCharge = subtotal > FREE_SHIP_ABOVE ? 0 : SHIP_FEE;
   const grandTotal = round2(subtotal + tax + shippingCharge);
@@ -305,9 +258,41 @@ export async function markOrderPaid(orderId, session) {
       status: "Paid",
     });
 
+    // Payment CONFIRMED — now (and only now) clear the user's cart. This sits
+    // inside the `!== "Paid"` block, so it runs exactly once, on success only:
+    // a failed or cancelled payment never reaches here, and a repeated
+    // redirect/webhook won't re-clear a cart the user has since refilled.
+    await clearCartForUser(order.user, order.orderNumber);
+
     // Payment confirmed — sync to CJ in the background.
     console.log(`[order] Stripe order ${order.orderNumber} paid → firing CJ sync`);
     syncOrderToCJInBackground(order._id);
   }
   return order;
+}
+
+/**
+ * Empties a user's cart after a successful order. Never called on failure or
+ * cancellation. Safe: a cart-clearing problem is logged but never breaks the
+ * order (the payment already succeeded).
+ */
+async function clearCartForUser(userId, orderNumber = "") {
+  if (!userId) {
+    console.log(`[cart] ${orderNumber}: guest order — no server cart to clear`);
+    return;
+  }
+  try {
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart || cart.items.length === 0) {
+      console.log(`[cart] ${orderNumber}: cart already empty — nothing to clear`);
+      return;
+    }
+    const count = cart.items.length;
+    cart.items = [];
+    await cart.save();
+    console.log(`[cart] ${orderNumber}: cart cleared ✓ (${count} item(s) removed after successful order)`);
+  } catch (err) {
+    // The order is already paid — a cart-clear failure must not break it.
+    console.error(`[cart] ${orderNumber}: FAILED to clear cart: ${err.message}`);
+  }
 }

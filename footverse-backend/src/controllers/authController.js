@@ -28,7 +28,29 @@ export async function register(req, res) {
 
     if (await User.findOne({ email })) {
       return res.status(409).json({ success: false, message: "An account with this email already exists." });
-    } 
+    }
+
+    // ---- Optional admin secret code ----
+    // Validated ONLY on the server against ADMIN_SECRET_CODE. The secret is never
+    // sent to the client and never stored — we only keep the boolean result.
+    //   empty  → normal user (isAdmin: false)
+    //   match  → admin account (isAdmin: true)
+    //   wrong  → registration rejected
+    const submittedCode = String(req.body?.adminSecretCode || "").trim();
+    let isAdmin = false;
+    if (submittedCode) {
+      const expected = String(process.env.ADMIN_SECRET_CODE || "").trim();
+      if (!expected) {
+        console.warn("[auth] an admin code was submitted but ADMIN_SECRET_CODE is not set on the server");
+        return res.status(400).json({ success: false, message: "Invalid Admin Secret Code" });
+      }
+      if (submittedCode !== expected) {
+        console.warn(`[auth] rejected registration for ${email}: invalid admin secret code`);
+        return res.status(400).json({ success: false, message: "Invalid Admin Secret Code" });
+      }
+      isAdmin = true;
+      console.log(`[auth] admin registration approved for ${email}`);
+    }
 
     const otp = generateOtp();
     const now = Date.now();
@@ -38,6 +60,7 @@ export async function register(req, res) {
       passwordHash: await bcrypt.hash(password, 10),
       otpHash: await hashOtp(otp),
       otpPlain: otp, // DEV ONLY: visible in Mongo for local testing
+      isAdmin, // result of the admin-secret check (the secret itself is not stored)
       otpExpires: new Date(now + OTP_TTL_MS),
       attempts: 0,
       lastSentAt: new Date(now),
@@ -97,13 +120,18 @@ export async function verifyOtpAndRegister(req, res) {
     }
 
     // Password is already hashed in the pending record — move it straight over.
+    // isAdmin was decided at REGISTRATION (a valid admin secret was supplied) and
+    // carried through the OTP step; the secret itself was never stored.
     const user = await User.create({
       name: pending.name,
       email: pending.email,
       passwordHash: pending.passwordHash,
       isVerified: true,
+      isAdmin: !!pending.isAdmin,
     });
     await PendingUser.deleteOne({ email });
+
+    if (user.isAdmin) console.log(`[auth] admin account created: ${user.email}`);
 
     return res.status(201).json({
       success: true,

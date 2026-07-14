@@ -24,61 +24,35 @@ export async function getOrders(req, res) {
   }
 }
 
+/**
+ * GET /api/orders/:id — the CUSTOMER view.
+ * Enforces ownership: you can only fetch your OWN order. (Previously any
+ * logged-in user could read any order by guessing/knowing its id — an IDOR.
+ * Admins use the dedicated admin endpoint to view any order.)
+ */
 export async function getOrder(req, res) {
   try {
-
-    const order = await getOrderById(
-      req.params.id
-    );
+    const order = await getOrderById(req.params.id);
 
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    res.json({
-      success: true,
-      order,
-    });
+    if (String(order.user) !== String(req.uid)) {
+      // Don't reveal that the order exists.
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
 
+    res.json({ success: true, order });
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-
+    res.status(500).json({ success: false, message: err.message });
   }
 }
 import {
-  createCodOrderForUser,
   getOrdersForUser,
 } from "../services/orderService.js";
 
-/**
- * POST /api/orders/cod   (auth required)
- * Places a Cash-on-Delivery order from the logged-in user's cart.
- */
-export async function placeCodOrder(req, res) {
-  try {
-    const { customer = {} } = req.body || {};
-    if (!customer.name || !customer.address || !customer.pin) {
-      return res.status(400).json({
-        success: false,
-        message: "Name, address and PIN code are required.",
-      });
-    }
-    const order = await createCodOrderForUser(req.uid, customer);
-    return res.status(201).json({ success: true, order });
-  } catch (err) {
-    console.error("placeCodOrder error:", err);
-    return res.status(err.status || 500).json({ success: false, message: err.message });
-  }
-}
 
 /**
  * GET /api/orders/my   (auth required)
@@ -191,4 +165,39 @@ export async function adminUpdateStatus(req, res) {
   });
   if (!r.ok) return res.status(r.status || 400).json({ success: false, message: r.message });
   res.json({ success: true, message: r.message, order: r.order });
+}
+
+import { runProductSync } from "../services/productSyncService.js";
+
+/** POST /api/orders/admin/products/sync — manually trigger a CJ→Mongo sync. */
+export async function adminSyncProducts(_req, res) {
+  // Rebuilds the full Redis product pool from CJ (runs in the background —
+  // users keep being served from the existing cache while it runs).
+  const r = await runProductSync();
+  res.json({ success: !!r.ok, ...r });
+}
+
+/** GET /api/orders/admin/products/status — Redis pool health. */
+export async function adminProductStatus(_req, res) {
+  const { getPoolStatus } = await import("../services/productStore.js");
+  res.json({ success: true, ...(await getPoolStatus()) });
+}
+
+/** GET /api/orders/admin/all — list every order in Mongo (diagnostic). */
+export async function adminListAllOrders(_req, res) {
+  try {
+    const { default: Order } = await import("../models/Order.js");
+    const orders = await Order.find().sort({ createdAt: -1 })
+      .select("orderNumber user paymentMethod orderStatus grandTotal cjOrderId cjSyncStatus createdAt");
+    res.json({ success: true, count: orders.length, orders });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+import { MIN_ORDER_VALUE } from "../services/orderService.js";
+
+/** GET /api/orders/config — public store config (B2B minimum order value). */
+export async function getStoreConfig(_req, res) {
+  res.json({ success: true, minOrderValue: MIN_ORDER_VALUE, currency: "USD" });
 }

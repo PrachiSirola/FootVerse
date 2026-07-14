@@ -10,7 +10,7 @@ export default function Newsletter() {
     <section className="mx-auto max-w-[1500px] px-5 pb-4 sm:px-8">
       <div className="rounded-3xl bg-gradient-to-br from-[#33231A] to-[#4A3526] px-6 py-14 text-center text-white sm:px-12">
         <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-[#D9B87A]">Stay in step</p>
-        <h2 className="mt-2 font-playfair text-3xl font-bold sm:text-4xl">Join the FootVerse</h2>
+        <h2 className="mt-2 font-sans text-3xl font-bold sm:text-4xl">Join the FootVerse</h2>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/70">
           New drops, member-only prices and size restocks — straight to your inbox. No spam, ever.
         </p>

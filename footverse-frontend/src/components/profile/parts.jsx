@@ -36,7 +36,7 @@ export function EmptyState({ icon = "✦", title, sub }) {
   return (
     <div className="py-16 text-center">
       <p className="text-4xl">{icon}</p>
-      <p className="mt-3 font-playfair text-2xl font-bold text-[#33231A]">{title}</p>
+      <p className="mt-3 font-sans text-2xl font-bold text-[#33231A]">{title}</p>
       {sub && <p className="mt-2 text-sm text-[#6E655C]">{sub}</p>}
     </div>
   );

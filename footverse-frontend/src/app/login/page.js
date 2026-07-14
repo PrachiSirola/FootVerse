@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -9,7 +9,7 @@ import { Field, PasswordField, SubmitButton, Alert } from "@/components/auth/Fie
 import { useAuth } from "@/context/AuthContext";
 
 function LoginInner() {
-  const { login } = useAuth();
+  const { login, user, ready } = useAuth();
   const router = useRouter();
   const sp = useSearchParams();
   const [email, setEmail] = useState("");
@@ -24,6 +24,13 @@ function LoginInner() {
     : "";
   const redirectTo = sp.get("redirect") || "/";
 
+  // already-logged-in guard: don't show /login to a signed-in user.
+  useEffect(() => {
+    if (!ready || !user) return;
+    const explicit = sp.get("redirect");
+    router.replace(explicit || (user.isAdmin ? "/admin" : "/"));
+  }, [ready, user, sp, router]);
+
   const submit = async (e) => {
     e.preventDefault();
     setError("");
@@ -31,8 +38,18 @@ function LoginInner() {
     if (!password) return setError("Please enter your password.");
     setLoading(true);
     try {
-      await login(email, password);
-      router.push(redirectTo);
+      const loggedIn = await login(email, password);
+
+      // Admins land on the dashboard by default. An explicit ?redirect= still
+      // wins (e.g. they clicked a product link before being asked to log in).
+      const explicitRedirect = sp.get("redirect");
+      if (explicitRedirect) {
+        router.push(explicitRedirect);
+      } else if (loggedIn?.isAdmin) {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Is the server running?");
     } finally {

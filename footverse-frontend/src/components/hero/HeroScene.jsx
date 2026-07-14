@@ -75,7 +75,7 @@ export default function HeroScene({ scene }) {
         ) : (
           <motion.h1
             variants={fadeUp(0.22)}
-            className="mt-2 font-playfair text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-[80px]"
+            className="mt-2 font-sans text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-[80px]"
           >
             <span className="text-[#33231A]">{headline.primary}</span>
             <span className="text-[#A5793A]">{headline.accent}</span>
@@ -96,7 +96,7 @@ export default function HeroScene({ scene }) {
         {/* Tagline */}
         <motion.p
           variants={fadeUp(0.44)}
-          className="mt-3 font-playfair text-xl font-medium text-[#A5793A] sm:text-2xl"
+          className="mt-3 font-sans text-xl font-medium text-[#A5793A] sm:text-2xl"
         >
           {scene.tagline}
         </motion.p>

@@ -57,7 +57,7 @@ export default function Hero() {
 
       {/* ================= HERO ================= */}
 
-      <div className="relative z-10 mx-auto h-[88vh] min-h-[820px] max-w-[1800px]">
+      <div className="relative z-10 mx-auto h-[88vh] min-h-[520px] max-h-[900px] max-w-[1800px] sm:min-h-[600px] lg:min-h-[680px]">
         <AnimatePresence mode="wait">
           <HeroScene key={scene.id} scene={scene} />
         </AnimatePresence>
