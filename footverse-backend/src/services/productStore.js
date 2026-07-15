@@ -19,7 +19,10 @@
  *     instead of rebuilding the whole pool, and cache it immediately.
  */
 import { buildPool, buildFirstBatch, fetchSingleProductFromCJ } from "./cjPoolService.js";
-import { cacheGet, cacheSet, cacheSetForever, cacheDel, invalidateProductCache, PRODUCT_PREFIX } from "../utils/cache.js";
+import {
+  cacheGet, cacheSet, cacheSetForever, cacheDel, invalidateProductCache, PRODUCT_PREFIX,
+  savePoolShards, loadPoolShards,
+} from "../utils/cache.js";
 
 const POOL_KEY = `${PRODUCT_PREFIX}pool`;
 const META_KEY = `${PRODUCT_PREFIX}pool:meta`;       // { builtAt, count, complete }
@@ -63,14 +66,26 @@ export function clearMemoryCache() {
 
 async function savePool(pool, { complete = true } = {}) {
   const meta = { builtAt: Date.now(), count: pool.length, complete };
-  // No TTL — the pool must never expire out from under us.
-  await cacheSetForever(POOL_KEY, pool);
+
+  // SHARDED WRITE — the pool is split into size-bounded chunks so managed Redis
+  // (Upstash / Render KV) never rejects an oversized value. savePoolShards
+  // REPORTS failure (unlike the old silent cacheSetForever), so a rejected write
+  // is visible in logs instead of leaving prod stuck on the cold-start batch.
+  const res = await savePoolShards(POOL_KEY, pool);
+  if (!res.ok) {
+    // Do NOT publish meta for a pool that didn't persist — otherwise readers
+    // would trust a count that isn't actually in Redis.
+    console.error(`[products] pool save FAILED (${res.reason}) — meta not updated, keeping previous pool`);
+    return null;
+  }
   await cacheSetForever(META_KEY, meta);
-  // Archive every COMPLETE pool as the safe fallback the storefront can serve
-  // if a later crawl leaves the working pool half-built.
-  if (complete) await cacheSetForever(LAST_COMPLETE_KEY, pool);
+
+  // Archive every COMPLETE pool as the safe fallback the storefront serves if a
+  // later crawl leaves the working pool half-built. Also sharded.
+  if (complete) await savePoolShards(LAST_COMPLETE_KEY, pool);
+
   setMemory(pool, meta);
-  console.log(`[products] pool saved to Redis — ${pool.length} products (complete: ${complete})`);
+  console.log(`[products] pool saved to Redis — ${pool.length} products across ${res.shards} shard(s) (complete: ${complete})`);
   return meta;
 }
 
@@ -187,8 +202,8 @@ export async function getAllProducts() {
     return memPool;
   }
 
-  // 2. Redis
-  const pool = await cacheGet(POOL_KEY);
+  // 2. Redis (sharded)
+  const pool = await loadPoolShards(POOL_KEY);
   if (pool && pool.length) {
     const meta = (await cacheGet(META_KEY)) || { builtAt: 0, count: pool.length, complete: true };
 
@@ -198,7 +213,7 @@ export async function getAllProducts() {
     // go empty. If the working pool is incomplete, serve the last COMPLETE pool
     // instead and let the crawl finish in the background.
     if (meta.complete === false) {
-      const lastComplete = await cacheGet(LAST_COMPLETE_KEY);
+      const lastComplete = await loadPoolShards(LAST_COMPLETE_KEY);
       if (lastComplete && lastComplete.length) {
         console.log(
           `[products] pool is incomplete (${pool.length}) — serving the last COMPLETE pool (${lastComplete.length}) instead`
@@ -334,7 +349,7 @@ export async function resumeIncompleteBuild() {
 export async function reclassifyPool() {
   const { classifyCategory, classifySubcategory } = await import("../utils/categoryClassifier.js");
 
-  const pool = (await cacheGet(POOL_KEY)) || [];
+  const pool = (await loadPoolShards(POOL_KEY)) || [];
   if (!pool.length) {
     return { ok: false, message: "The Redis pool is empty — nothing to re-classify." };
   }
@@ -397,7 +412,7 @@ export async function reclassifyPool() {
  *   reached yet. Removing on a partial crawl is what emptied categories.
  */
 export async function mergePool(fresh, { complete = false } = {}) {
-  const existing = (await cacheGet(POOL_KEY)) || [];
+  const existing = (await loadPoolShards(POOL_KEY)) || [];
 
   if (!fresh || !fresh.length) {
     console.warn("[merge] the crawl returned no products — keeping the existing pool untouched");
@@ -473,7 +488,7 @@ export async function mergePool(fresh, { complete = false } = {}) {
  * The existing catalogue is preserved if anything goes wrong.
  */
 export async function incrementalSync() {
-  const existing = (await cacheGet(POOL_KEY)) || [];
+  const existing = (await loadPoolShards(POOL_KEY)) || [];
   console.log(`[sync] incremental sync starting (existing catalogue: ${existing.length} products)`);
 
   try {
