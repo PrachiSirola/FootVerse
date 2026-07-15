@@ -7,7 +7,7 @@
  * pool is stale (stale-while-revalidate). Either way, requests are served from
  * cache immediately and never block on CJ.
  */
-import { rebuildPool, getPoolStatus, resumeIncompleteBuild } from "./productStore.js";
+import { rebuildPool, incrementalSync, getPoolStatus, resumeIncompleteBuild } from "./productStore.js";
 import { invalidateProductCache } from "../utils/cache.js";
 
 // A FULL re-crawl of ~143 keywords at CJ's 1 request/second takes a long time.
@@ -28,7 +28,10 @@ export async function runProductSync() {
   running = true;
   try {
     console.log("[product sync] rebuilding the Redis product pool from CJ…");
-    const r = await rebuildPool();
+    // INCREMENTAL — merges into the existing catalogue instead of replacing it.
+    // rebuildPool() used to crawl all 143 keywords and REPLACE the pool, so an
+    // interrupted crawl shrank the catalogue and emptied categories.
+    const r = await incrementalSync();
     if (!r.ok) {
       console.warn("[product sync] CJ returned no products — keeping the existing cached pool");
       return { ok: false, reason: "empty pool" };

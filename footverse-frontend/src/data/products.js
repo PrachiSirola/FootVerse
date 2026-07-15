@@ -1156,42 +1156,6 @@ export const PRODUCTS = [
     "description": "An elegant profile meets all-day comfort. Soft-touch upper, supportive footbed and a flexible sole designed to move with you from morning to midnight."
   },
   {
-    "id": "fv-033",
-    "name": "Adidas Crown Fit",
-    "brand": "Adidas",
-    "category": "kids",
-    "categoryName": "Kids",
-    "subcategory": "School Shoes",
-    "price": 3909,
-    "mrp": 4598,
-    "discount": 15,
-    "rating": 3.9,
-    "reviews": 631,
-    "sizes": [
-      "UK 10C",
-      "UK 11C",
-      "UK 12C",
-      "UK 13C",
-      "UK 1",
-      "UK 2",
-      "UK 3"
-    ],
-    "colors": [
-      "Blue",
-      "White"
-    ],
-    "images": [
-      "/products/fv-033-1.png",
-      "/products/fv-033-2.png",
-      "/products/fv-033-3.png"
-    ],
-    "badge": null,
-    "inStock": true,
-    "featured": false,
-    "createdAt": "2026-05-27",
-    "description": "Built for playgrounds and PT periods alike — lightweight, tough-wearing and easy to slip on, with extra toe protection where kids need it most."
-  },
-  {
     "id": "fv-034",
     "name": "New Balance Stride One",
     "brand": "New Balance",
@@ -1335,42 +1299,6 @@ export const PRODUCTS = [
     "inStock": true,
     "featured": false,
     "createdAt": "2026-05-11",
-    "description": "Built for playgrounds and PT periods alike — lightweight, tough-wearing and easy to slip on, with extra toe protection where kids need it most."
-  },
-  {
-    "id": "fv-038",
-    "name": "Woodland Crown Fit",
-    "brand": "Woodland",
-    "category": "kids",
-    "categoryName": "Kids",
-    "subcategory": "School Shoes",
-    "price": 1599,
-    "mrp": 1998,
-    "discount": 20,
-    "rating": 4.8,
-    "reviews": 831,
-    "sizes": [
-      "UK 10C",
-      "UK 11C",
-      "UK 12C",
-      "UK 13C",
-      "UK 1",
-      "UK 2",
-      "UK 3"
-    ],
-    "colors": [
-      "Grey",
-      "Black"
-    ],
-    "images": [
-      "/products/fv-038-1.png",
-      "/products/fv-038-2.png",
-      "/products/fv-038-3.png"
-    ],
-    "badge": "Bestseller",
-    "inStock": true,
-    "featured": true,
-    "createdAt": "2026-03-23",
     "description": "Built for playgrounds and PT periods alike — lightweight, tough-wearing and easy to slip on, with extra toe protection where kids need it most."
   },
   {
@@ -1556,42 +1484,6 @@ export const PRODUCTS = [
     "description": "Engineered for performance: responsive cushioning, a locked-in fit and traction tuned for your game. Train harder, recover faster."
   },
   {
-    "id": "fv-044",
-    "name": "Asics Flex Motion",
-    "brand": "Asics",
-    "category": "sports",
-    "categoryName": "Sports & Outdoor",
-    "subcategory": "Cricket",
-    "price": 4649,
-    "mrp": 6198,
-    "discount": 25,
-    "rating": 4.3,
-    "reviews": 694,
-    "sizes": [
-      "UK 6",
-      "UK 7",
-      "UK 8",
-      "UK 9",
-      "UK 10",
-      "UK 11"
-    ],
-    "colors": [
-      "Blue",
-      "Tan",
-      "Gold"
-    ],
-    "images": [
-      "/products/fv-044-1.png",
-      "/products/fv-044-2.png",
-      "/products/fv-044-3.png"
-    ],
-    "badge": null,
-    "inStock": true,
-    "featured": false,
-    "createdAt": "2026-04-07",
-    "description": "Engineered for performance: responsive cushioning, a locked-in fit and traction tuned for your game. Train harder, recover faster."
-  },
-  {
     "id": "fv-045",
     "name": "Reebok Swift Lane",
     "brand": "Reebok",
@@ -1660,42 +1552,6 @@ export const PRODUCTS = [
     "inStock": true,
     "featured": false,
     "createdAt": "2026-06-24",
-    "description": "Engineered for performance: responsive cushioning, a locked-in fit and traction tuned for your game. Train harder, recover faster."
-  },
-  {
-    "id": "fv-047",
-    "name": "Puma Court Vision",
-    "brand": "Puma",
-    "category": "sports",
-    "categoryName": "Sports & Outdoor",
-    "subcategory": "Trekking",
-    "price": 5149,
-    "mrp": 10298,
-    "discount": 50,
-    "rating": 4.5,
-    "reviews": 646,
-    "sizes": [
-      "UK 6",
-      "UK 7",
-      "UK 8",
-      "UK 9",
-      "UK 10",
-      "UK 11"
-    ],
-    "colors": [
-      "White",
-      "Grey",
-      "Gold"
-    ],
-    "images": [
-      "/products/fv-047-1.png",
-      "/products/fv-047-2.png",
-      "/products/fv-047-3.png"
-    ],
-    "badge": "Sale",
-    "inStock": true,
-    "featured": false,
-    "createdAt": "2026-05-26",
     "description": "Engineered for performance: responsive cushioning, a locked-in fit and traction tuned for your game. Train harder, recover faster."
   },
   {

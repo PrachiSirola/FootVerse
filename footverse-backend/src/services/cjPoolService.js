@@ -56,6 +56,7 @@ export async function buildPool({ deep = false, onProgress = null, resume = null
     // Skip keywords already completed in a previous run.
     if (doneKeywords.has(keyword)) continue;
     let keywordCount = 0;
+    let keywordDupes = 0; // products this keyword found but an EARLIER keyword had already claimed
     let effectivePageSize = 0; // CJ's REAL page size, learned from its response
     let pageSize = PER_PAGE;   // may fall back if CJ rejects a large size
     for (let page = 1; page <= pagesPerKeyword; page++) {
@@ -78,7 +79,13 @@ export async function buildPool({ deep = false, onProgress = null, resume = null
         }
         for (const raw of items) {
           const p = transformCJLive(raw, category, subcategory);
-          if (!p._id || seen.has(p._id)) continue; // de-dupe across keywords/pages
+          if (!p._id) continue;
+          if (seen.has(p._id)) {
+            // Already claimed by an EARLIER keyword. This is the dedup that was
+            // starving the specific categories when broad keywords ran first.
+            keywordDupes++;
+            continue;
+          }
           // Broad keywords also return bags, socks, shoe racks and apparel.
           // Keep the catalog pure — only genuine footwear is admitted.
           if (!isFootwear(p.name)) {
@@ -116,7 +123,13 @@ export async function buildPool({ deep = false, onProgress = null, resume = null
         break; // move to the next keyword rather than retrying forever
       }
     }
-    console.log(`[cj pool] ${keyword} → ${keywordCount} (running total: ${all.length})`);
+    // Shows exactly which keywords are being starved by the global dedup.
+    const starved = keywordCount === 0 && keywordDupes > 0;
+    console.log(
+      `[cj pool] ${keyword} → ${keywordCount} new, ${keywordDupes} already claimed` +
+        `${starved ? "  ★ STARVED (everything it found was taken by an earlier keyword)" : ""}` +
+        `  (total: ${all.length})`
+    );
 
     // CHECKPOINT: persist progress after every keyword so an interrupted run
     // (crash, restart, deploy) resumes from here instead of starting over.
