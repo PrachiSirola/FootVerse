@@ -49,6 +49,59 @@ function scheduleCJ(fn) {
 const isQpsError = (msg = "") =>
   /too many requests|qps limit|1 time\/1second|frequenc/i.test(String(msg));
 
+// CJ charges API "points" per request. When they run low/out, CJ returns a 429
+// with an "insufficient points" message. We track the latest pointsInfo from
+// every response and expose a pause signal so the sync can stop BEFORE draining
+// them, then resume once they replenish.
+const isPointsError = (msg = "") =>
+  /insufficient.*points?|not enough.*points?|points?.*(exhaust|insufficient|not enough)/i.test(String(msg));
+
+// Latest pointsInfo seen on ANY CJ response. Shape mirrors CJ's envelope:
+// { remaining, used, limit, ... } — we store whatever CJ sends plus a timestamp.
+let lastPointsInfo = null;   // { remaining, ...raw, at }
+let pointsPausedUntil = 0;   // epoch ms; > now means "don't call CJ yet"
+
+/** Latest known CJ points state (null until the first CJ response). */
+export function getLastPointsInfo() {
+  return lastPointsInfo;
+}
+
+/** True while we're deliberately pausing CJ calls after a points-exhaustion 429. */
+export function isPointsPaused() {
+  return Date.now() < pointsPausedUntil;
+}
+
+/** ms until the points pause lifts (0 if not paused). */
+export function pointsPauseRemainingMs() {
+  return Math.max(0, pointsPausedUntil - Date.now());
+}
+
+/** Manually clear the pause (e.g. after a successful re-check found points). */
+export function clearPointsPause() {
+  pointsPausedUntil = 0;
+}
+
+// Parse a reset/replenish hint from CJ's envelope if present. CJ isn't
+// guaranteed to send one; callers fall back to a short fixed re-check.
+function parseResetMs(envelope) {
+  const pi = envelope?.pointsInfo || {};
+  // Try common shapes: resetTime (epoch ms/s), resetAt (ISO), nextResetSeconds.
+  const cand = pi.resetTime ?? pi.resetAt ?? pi.nextReset ?? envelope?.resetTime;
+  if (cand == null) return null;
+  if (typeof cand === "number") {
+    // Heuristic: seconds vs ms.
+    const ms = cand < 1e12 ? cand * 1000 : cand;
+    const delta = ms - Date.now();
+    return delta > 0 && delta < 24 * 3600 * 1000 ? delta : null;
+  }
+  const t = Date.parse(cand);
+  if (!Number.isNaN(t)) {
+    const delta = t - Date.now();
+    return delta > 0 && delta < 24 * 3600 * 1000 ? delta : null;
+  }
+  return null;
+}
+
 async function rawRequest(method, endpoint, body = null) {
   const token = await getValidAccessToken();
   const options = {
@@ -60,9 +113,29 @@ async function rawRequest(method, endpoint, body = null) {
   const response = await fetch(`${CJ_CONFIG.BASE_URL}${endpoint}`, options);
   const result = await response.json();
 
+  // Capture pointsInfo from EVERY response (success or failure) so the sync's
+  // reserve check always reads the freshest value. pointsInfo is on the OUTER
+  // envelope, which getCJProductsV2 never sees — this is the only place it's
+  // visible.
+  if (result && typeof result === "object" && result.pointsInfo) {
+    lastPointsInfo = { ...result.pointsInfo, at: Date.now() };
+  }
+
   if (!result.result) {
     const err = new Error(result.message || "CJ API Error");
     err.isQps = isQpsError(result.message);
+    err.isPoints = isPointsError(result.message) || response.status === 429 && isPointsError(result.message);
+    if (err.isPoints) {
+      // Enter a pause. Use CJ's reset hint if given, else a short 2–3 min window
+      // (caller re-checks and extends if points are still below reserve).
+      const resetMs = parseResetMs(result);
+      const pauseMs = resetMs ?? (150 * 1000); // ~2.5 min default
+      pointsPausedUntil = Date.now() + pauseMs;
+      console.warn(
+        `[cj points] ✗ insufficient points — pausing CJ calls for ${(pauseMs / 1000 | 0)}s` +
+        (lastPointsInfo ? ` (remaining: ${lastPointsInfo.remaining})` : "")
+      );
+    }
     throw err;
   }
   return result.data;

@@ -52,41 +52,49 @@ export async function getCJProductsV2(query = {}) {
   console.dir(data, { depth: null });
 
   let rawProducts = [];
+  // CJ's REAL paging metadata. The old code discarded these and substituted
+  // rawProducts.length, leaving the crawler blind to how many pages a source
+  // actually has (the root cause of paging deep into duplicates). We now read
+  // CJ's own totalRecords/totalPages so the crawler can stop at the true end.
+  let totalRecords = null;
+  let totalPages = null;
+  let pageNumber = null;
 
   /**
    * ----------------------------------------------------
    * New API Structure
-   * data = [
-   *   {
-   *      list:[]
-   *   }
-   * ]
+   * data = [ { list:[] } ]   (may also carry pageNum/total/pageSize)
    * ----------------------------------------------------
    */
   if (Array.isArray(data)) {
     rawProducts = data[0]?.list || [];
+    totalRecords = data[0]?.total ?? data.total ?? null;
+    pageNumber = data[0]?.pageNum ?? null;
   }
 
   /**
    * ----------------------------------------------------
-   * Old API Structure
-   * data.content = [...]
+   * API Structure: data.content = [ { productList:[] } ]
+   * with data.totalRecords / data.totalPages / data.pageNumber
    * ----------------------------------------------------
    */
   else if (Array.isArray(data.content)) {
-    rawProducts =
-      data.content[0]?.productList || [];
+    rawProducts = data.content[0]?.productList || [];
+    totalRecords = data.totalRecords ?? null;
+    totalPages = data.totalPages ?? null;
+    pageNumber = data.pageNumber ?? null;
   }
 
   /**
    * ----------------------------------------------------
-   * Old API Structure
-   * data.content.productList
+   * API Structure: data.content.productList
    * ----------------------------------------------------
    */
   else if (data.content?.productList) {
-    rawProducts =
-      data.content.productList;
+    rawProducts = data.content.productList;
+    totalRecords = data.content.totalRecords ?? data.totalRecords ?? null;
+    totalPages = data.content.totalPages ?? data.totalPages ?? null;
+    pageNumber = data.content.pageNumber ?? data.pageNumber ?? null;
   }
 
   /**
@@ -95,8 +103,16 @@ export async function getCJProductsV2(query = {}) {
    * ----------------------------------------------------
    */
   else if (data.productList) {
-    rawProducts =
-      data.productList;
+    rawProducts = data.productList;
+    totalRecords = data.totalRecords ?? null;
+    totalPages = data.totalPages ?? null;
+    pageNumber = data.pageNumber ?? null;
+  }
+
+  // Derive totalPages if CJ only gave totalRecords (and we know the page size).
+  const effSize = Number(query.size) || 20;
+  if (totalPages == null && totalRecords != null && effSize > 0) {
+    totalPages = Math.ceil(Number(totalRecords) / effSize);
   }
 
   console.log(
@@ -109,12 +125,18 @@ export async function getCJProductsV2(query = {}) {
     success: true,
 
     keyword: query.keyWord || "",
+    categoryId: query.categoryId || "",
 
-    page: query.page || 1,
+    page: Number(query.page) || 1,
+    pageSize: effSize,
 
-    pageSize: query.size || 20,
-
-    totalRecords: rawProducts.length,
+    // CJ's REAL totals (null if CJ didn't provide them). `pageCount` is the
+    // number returned on THIS page — kept separate from totalRecords so the
+    // crawler can tell "short page = last page" from "catalog is this big".
+    totalRecords: totalRecords != null ? Number(totalRecords) : null,
+    totalPages: totalPages != null ? Number(totalPages) : null,
+    pageNumber: pageNumber != null ? Number(pageNumber) : (Number(query.page) || 1),
+    pageCount: rawProducts.length,
 
     relatedCategories:
       data.relatedCategoryList ||

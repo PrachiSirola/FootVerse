@@ -23,10 +23,11 @@ import {
   cacheGet, cacheSet, cacheSetForever, cacheDel, invalidateProductCache, PRODUCT_PREFIX,
   savePoolShards, loadPoolShards,
 } from "../utils/cache.js";
+import { getLastPointsInfo, isPointsPaused, pointsPauseRemainingMs } from "../utils/apiClient.js";
 
 const POOL_KEY = `${PRODUCT_PREFIX}pool`;
 const META_KEY = `${PRODUCT_PREFIX}pool:meta`;       // { builtAt, count, complete }
-const PROGRESS_KEY = `${PRODUCT_PREFIX}pool:progress`; // { products, doneKeywords } — resume point
+const PROGRESS_KEY = `${PRODUCT_PREFIX}pool:progress`; // { products, doneCategories } — resume point
 // The last pool that was crawled to COMPLETION. The storefront falls back to
 // this whenever the working pool is incomplete, so a half-built catalogue (with
 // whole categories missing) is never served.
@@ -48,6 +49,8 @@ const MEM_TTL_MS = Number(process.env.PRODUCT_MEM_TTL_MS || 10 * 60 * 1000); // 
 /** Guards so we never run two CJ builds at once. */
 let refreshing = false;
 let coldFilling = false;
+// In-memory mirror of the Redis resume checkpoint (fast reads / status endpoint).
+let progressMirror = null;
 
 function setMemory(pool, meta) {
   memPool = pool;
@@ -112,6 +115,36 @@ async function refreshInBackground(reason = "stale") {
 }
 
 /**
+ * Merge freshly-fetched products into the existing pool by _id (UPSERT), never
+ * shrinking. Used when a crawl stops early (points exhausted): the partial we
+ * DID fetch is folded in, so progress is never lost, but the pool can only grow
+ * or update — a points-starved short run can never collapse the catalog.
+ */
+function mergeUpsert(existing, incoming) {
+  const byId = new Map(existing.map((p) => [String(p._id), p]));
+  for (const p of incoming) {
+    if (!p || !p._id) continue;
+    byId.set(String(p._id), p); // update if present, insert if new
+  }
+  return [...byId.values()];
+}
+
+// Schedule a resume of the points-paused crawl. Re-checks every 2–3 min (or
+// waits out CJ's reset hint) rather than a long fixed delay, so the catalog
+// finishes as soon as points return.
+let pointsResumeTimer = null;
+function schedulePointsResume() {
+  if (pointsResumeTimer) return; // already scheduled
+  const pauseMs = pointsPauseRemainingMs();
+  const wait = pauseMs > 0 ? pauseMs + 1000 : (150 * 1000); // reset hint, else ~2.5 min
+  console.log(`[products] points low — will re-check & resume the crawl in ${(wait / 1000 | 0)}s`);
+  pointsResumeTimer = setTimeout(() => {
+    pointsResumeTimer = null;
+    fillFullCatalogInBackground();
+  }, wait);
+}
+
+/**
  * Build the FULL catalog in the background, RESUMING from the last checkpoint if
  * a previous run was interrupted (crash, restart, deploy). Progress is saved to
  * Redis after every keyword, so nothing is ever re-crawled unnecessarily.
@@ -124,52 +157,83 @@ async function fillFullCatalogInBackground(attempt = 1) {
   const MAX_ATTEMPTS = 5;
   try {
     // Load any saved progress so we resume instead of starting over.
-    const saved = await cacheGet(PROGRESS_KEY);
-    if (saved?.doneKeywords?.length) {
-      console.log(
-        `[products] resuming catalog build — ${saved.doneKeywords.length} keyword(s) already done, ${saved.products?.length || 0} products so far`
-      );
-    } else {
-      console.log("[products] building the full catalog from CJ…");
+    let saved = await cacheGet(PROGRESS_KEY);
+
+    // MIGRATION: the old crawler checkpointed `doneKeywords` (keyword units); the
+    // category crawler checkpoints `doneCategories` (category/keyword unitKeys).
+    // An old checkpoint is incompatible — resuming against it would skip the
+    // wrong units. Detect a pre-migration checkpoint (has doneKeywords but no
+    // doneCategories) and clear it so the first post-migration crawl starts
+    // clean. The already-fetched products are NOT lost — they remain in the live
+    // pool (merge-upsert never shrinks); only the resume cursor resets.
+    if (saved && saved.doneKeywords && !saved.doneCategories) {
+      console.log("[products] migration: clearing incompatible old keyword checkpoint; starting category crawl fresh");
+      await cacheDel(PROGRESS_KEY);
+      progressMirror = null;
+      saved = null;
     }
 
+    if (saved?.doneCategories?.length) {
+      console.log(
+        `[products] resuming catalog build — ${saved.doneCategories.length} category/unit(s) already done, ${saved.products?.length || 0} products so far`
+      );
+    } else {
+      console.log("[products] building the full catalog from CJ by category…");
+    }
+
+    const control = {};
     const pool = await buildPool({
       deep: true,
       resume: saved || null,
-      // Checkpoint after each keyword: save BOTH the resume point and a live
-      // partial pool, so the storefront immediately benefits from progress and
-      // a restart resumes exactly here.
-      // CHECKPOINT — save the RESUME POINT only.
-      //
-      // It must NOT overwrite the live pool. Keywords are crawled in order
-      // (broad → Men → Women → Kids → Sports), so a partial pool is missing
-      // whole CATEGORIES. Publishing it made Kids/Sports pages go empty
-      // mid-crawl and reappear later — and stay empty forever if the crawl
-      // never finished. The storefront keeps serving the last COMPLETE pool
-      // until the new one is finished, then it is swapped in atomically.
-      onProgress: async ({ products, doneKeywords, totalKeywords }) => {
-        await cacheSetForever(PROGRESS_KEY, { products, doneKeywords });
+      control, // learn WHY the crawl stopped (points vs complete)
+      onProgress: async ({ products, doneCategories, totalCategories }) => {
+        // Redis primary + memory mirror of the resume point.
+        await cacheSetForever(PROGRESS_KEY, { products, doneCategories });
+        progressMirror = { products, doneCategories };
         console.log(
-          `[products] checkpoint — ${doneKeywords.length}/${totalKeywords} keywords, ${products.length} products (not yet published)`
+          `[products] checkpoint — ${doneCategories.length}/${totalCategories} categories, ${products.length} products (not yet published)`
         );
       },
     });
 
-    if (pool && pool.length) {
+    // ---- POINTS-PAUSED: crawl stopped early to protect the reserve ----
+    // Do NOT atomic-swap (partial is missing categories). Instead UPSERT the
+    // partial into the existing pool so progress shows without shrinking, keep
+    // lastComplete as the safe fallback, and schedule a resume. The progress
+    // checkpoint is retained so the resume continues from the exact keyword.
+    if (control.stopReason && !control.complete) {
+      coldFilling = false;
+      if (pool && pool.length) {
+        const existing = (await loadPoolShards(POOL_KEY)) || [];
+        const merged = mergeUpsert(existing, pool);
+        if (merged.length >= existing.length) {
+          // never shrink; publish as a NON-complete pool (getAllProducts still
+          // prefers lastComplete when serving, so users see a full catalog)
+          await savePool(merged, { complete: false });
+          console.log(
+            `[products] ⏸ crawl paused (${control.stopReason}) — merged ${pool.length} fetched into pool ` +
+            `(${existing.length} → ${merged.length}), lastComplete kept as fallback.`
+          );
+        }
+      } else {
+        console.log(`[products] ⏸ crawl paused (${control.stopReason}) with no new products — pool unchanged.`);
+      }
+      schedulePointsResume();
+      return; // resume timer will continue; do NOT clear PROGRESS_KEY
+    }
+
+    if (pool && pool.length && control.complete) {
       // ATOMIC SWAP: the completed pool replaces the old one in one step, and
       // only now — the storefront never sees a half-built catalogue.
       await savePool(pool, { complete: true });
       await cacheDel(PROGRESS_KEY); // done — clear the resume point
+      progressMirror = null;
 
-      // Cached RESPONSES (e.g. /api/products?category=Kids) may have been
-      // computed against the previous pool. If any were cached while the old
-      // pool lacked a category, that page would stay empty forever. Clear them
-      // so every category is recomputed against the new complete catalogue.
       await invalidateProductCache();
       clearMemoryCache();
 
       console.log(`[products] FULL catalog ready — ${pool.length} products ✓ (published, caches cleared)`);
-    } else {
+    } else if (!control.stopReason) {
       throw new Error("CJ returned no products");
     }
   } catch (err) {
@@ -316,6 +380,8 @@ export async function rebuildPool() {
 /** Current pool status (for admin/debug). */
 export async function getPoolStatus() {
   const meta = (await cacheGet(META_KEY)) || null;
+  const points = getLastPointsInfo();
+  const saved = progressMirror || (await cacheGet(PROGRESS_KEY));
   return {
     cached: !!meta,
     count: meta?.count || 0,
@@ -324,6 +390,16 @@ export async function getPoolStatus() {
     ageMinutes: meta?.builtAt ? Math.round((Date.now() - meta.builtAt) / 60000) : null,
     refreshing,
     coldFilling,
+    // ---- points-aware sync observability ----
+    points: points
+      ? { remaining: points.remaining, ...points }
+      : null,
+    pointsPaused: isPointsPaused(),
+    pointsPauseInSec: Math.round(pointsPauseRemainingMs() / 1000),
+    resumePending: !!pointsResumeTimer,
+    checkpoint: saved?.doneCategories
+      ? { categoriesDone: saved.doneCategories.length, productsSoFar: saved.products?.length || 0 }
+      : null,
   };
 }
 
