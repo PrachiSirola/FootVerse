@@ -198,7 +198,7 @@ export async function getAllProducts() {
     // go empty. If the working pool is incomplete, serve the last COMPLETE pool
     // instead and let the crawl finish in the background.
     if (meta.complete === false) {
-      const lastComplete = await cacheGet(LAST_COMPLETE_KEY);
+      const lastComplete = await loadPoolShards(LAST_COMPLETE_KEY);
       if (lastComplete && lastComplete.length) {
         console.log(
           `[products] pool is incomplete (${pool.length}) — serving the last COMPLETE pool (${lastComplete.length}) instead`
@@ -218,6 +218,18 @@ export async function getAllProducts() {
 
   // 3. COLD: Redis is empty. Fetch a fast first batch so the user sees products
   //    within seconds, then load the full catalog in the background.
+  // 3. Main pool key is EMPTY — before calling CJ, see if we still have a
+  // last COMPLETE catalogue.
+  const lastComplete = await loadPoolShards(LAST_COMPLETE_KEY);
+  if (lastComplete && lastComplete.length) {
+    console.warn(
+      `[products] main pool key is EMPTY but a last-complete pool exists (${lastComplete.length} products) — serving it and repairing the main pool key`
+    );
+    await savePool(lastComplete, { complete: true });
+    return lastComplete;
+  }
+
+// 4. COLD: Redis is truly empty.
   console.log("[products] Redis is COLD — fetching a quick first batch from CJ…");
   try {
     const firstBatch = await buildFirstBatch();
@@ -290,12 +302,34 @@ export async function getProductById(id) {
 
 /** Force a full rebuild now (admin). Returns the new pool size. */
 export async function rebuildPool() {
-  const pool = await buildPool({ deep: true });
-  if (pool && pool.length) {
+  const control = {};
+
+  const pool = await buildPool({
+    deep: true,
+    control,
+  });
+
+  if (pool && pool.length && control.complete) {
     await savePool(pool, { complete: true });
-    return { ok: true, count: pool.length };
+    return {
+      ok: true,
+      count: pool.length,
+    };
   }
-  return { ok: false, count: 0 };
+
+  if (control.stopReason) {
+    return {
+      ok: false,
+      paused: true,
+      reason: control.stopReason,
+      count: pool?.length || 0,
+    };
+  }
+
+  return {
+    ok: false,
+    count: 0,
+  };
 }
 
 /** Current pool status (for admin/debug). */

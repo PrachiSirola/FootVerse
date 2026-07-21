@@ -187,7 +187,7 @@ export async function getAllProducts() {
     return memPool;
   }
 
-  // 2. Redis
+  // 2. Redis — main pool key
   const pool = await cacheGet(POOL_KEY);
   if (pool && pool.length) {
     const meta = (await cacheGet(META_KEY)) || { builtAt: 0, count: pool.length, complete: true };
@@ -198,13 +198,13 @@ export async function getAllProducts() {
     // go empty. If the working pool is incomplete, serve the last COMPLETE pool
     // instead and let the crawl finish in the background.
     if (meta.complete === false) {
-      const lastComplete = await cacheGet(LAST_COMPLETE_KEY);
-      if (lastComplete && lastComplete.length) {
+      const lastCompleteInner = await cacheGet(LAST_COMPLETE_KEY);
+      if (lastCompleteInner && lastCompleteInner.length) {
         console.log(
-          `[products] pool is incomplete (${pool.length}) — serving the last COMPLETE pool (${lastComplete.length}) instead`
+          `[products] pool is incomplete (${pool.length}) — serving the last COMPLETE pool (${lastCompleteInner.length}) instead`
         );
         maybeRefresh(meta); // keep the crawl going
-        return lastComplete;
+        return lastCompleteInner;
       }
       // No complete pool yet (very first crawl) — serve what we have rather than
       // nothing, and keep filling in the background.
@@ -216,9 +216,19 @@ export async function getAllProducts() {
     return pool;                 // ← instant, user never waits
   }
 
-  // 3. COLD: Redis is empty. Fetch a fast first batch so the user sees products
-  //    within seconds, then load the full catalog in the background.
-  console.log("[products] Redis is COLD — fetching a quick first batch from CJ…");
+  const lastComplete = await cacheGet(LAST_COMPLETE_KEY);
+  if (lastComplete && lastComplete.length) {
+    console.warn(
+      `[products] main pool key is EMPTY but a last-complete pool exists (${lastComplete.length} products) — serving it and repairing the main pool key`
+    );
+
+    await savePool(lastComplete, { complete: true });
+    return lastComplete;
+  }
+
+
+  // 4. COLD: truly nothing cached anywhere. Only now pay for a live CJ call.
+  console.log("[products] Redis is COLD (no pool, no lastComplete) — fetching a quick first batch from CJ…");
   try {
     const firstBatch = await buildFirstBatch();
     if (firstBatch && firstBatch.length) {
@@ -231,8 +241,8 @@ export async function getAllProducts() {
     console.error(`[products] first-batch fetch failed: ${err.message}`);
   }
 
-  // 4. Absolute worst case: CJ unreachable and nothing cached.
-  console.warn("[products] no products available (Redis empty + CJ unreachable)");
+  // 5. Absolute worst case: CJ unreachable/exhausted AND nothing cached anywhere.
+  console.warn("[products] no products available anywhere (Redis empty, lastComplete empty, CJ unreachable/exhausted)");
   return [];
 }
 
@@ -290,12 +300,35 @@ export async function getProductById(id) {
 
 /** Force a full rebuild now (admin). Returns the new pool size. */
 export async function rebuildPool() {
-  const pool = await buildPool({ deep: true });
-  if (pool && pool.length) {
+  const control = {};
+
+  const pool = await buildPool({
+    deep: true,
+    control,
+  });
+
+  if (pool && pool.length && control.complete) {
     await savePool(pool, { complete: true });
-    return { ok: true, count: pool.length };
+
+    return {
+      ok: true,
+      count: pool.length,
+    };
   }
-  return { ok: false, count: 0 };
+
+  if (control.stopReason) {
+    return {
+      ok: false,
+      paused: true,
+      reason: control.stopReason,
+      count: pool?.length || 0,
+    };
+  }
+
+  return {
+    ok: false,
+    count: 0,
+  };
 }
 
 /** Current pool status (for admin/debug). */
@@ -477,9 +510,15 @@ export async function incrementalSync() {
   console.log(`[sync] incremental sync starting (existing catalogue: ${existing.length} products)`);
 
   try {
-    const fresh = await buildPool({ deep: true });
-    // buildPool only returns a full set when it completed every keyword.
-    return await mergePool(fresh, { complete: true });
+    const control = {};
+    const fresh = await buildPool({
+      deep: true,
+      control,
+    });
+
+    return await mergePool(fresh, {
+      complete: !!control.complete,
+    });
   } catch (err) {
     console.error(`[sync] crawl failed: ${err.message} — the existing catalogue is untouched`);
     return { ok: false, error: err.message, total: existing.length };
