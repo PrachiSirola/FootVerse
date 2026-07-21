@@ -297,7 +297,41 @@ export async function getAllProducts() {
 
   // 3. COLD: Redis is empty. Fetch a fast first batch so the user sees products
   //    within seconds, then load the full catalog in the background.
-  console.log("[products] Redis is COLD — fetching a quick first batch from CJ…");
+// 3. Main pool key is empty — BEFORE trying a live CJ call (which costs
+  //    points and can take tens of seconds), check whether a last-known-good
+  //    COMPLETE pool still exists. This is the fix: previously this fallback
+  //    was only checked when the main pool had SOME data but was flagged
+  //    incomplete — if the main pool key itself was empty, this branch was
+  //    never reached at all, and a points-exhausted CJ call fell straight
+  //    through to returning [].
+  const lastComplete = await cacheGet(LAST_COMPLETE_KEY);
+  if (lastComplete && lastComplete.length) {
+    console.warn(
+      `[products] main pool key is EMPTY but a last-complete pool exists (${lastComplete.length} products) — serving it and repairing the main pool key`
+    );
+    await savePool(lastComplete, { complete: true }); // repair: republish as main pool
+    return lastComplete;
+  }
+
+  // 4. COLD: truly nothing cached anywhere. Only now pay for a live CJ call.
+// 3. Main pool key is empty — BEFORE trying a live CJ call (which costs
+  //    points and can take tens of seconds), check whether a last-known-good
+  //    COMPLETE pool still exists. This is the fix: previously this fallback
+  //    was only checked when the main pool had SOME data but was flagged
+  //    incomplete — if the main pool key itself was empty, this branch was
+  //    never reached at all, and a points-exhausted CJ call fell straight
+  //    through to returning [].
+  const lastComplete = await cacheGet(LAST_COMPLETE_KEY);
+  if (lastComplete && lastComplete.length) {
+    console.warn(
+      `[products] main pool key is EMPTY but a last-complete pool exists (${lastComplete.length} products) — serving it and repairing the main pool key`
+    );
+    await savePool(lastComplete, { complete: true }); // repair: republish as main pool
+    return lastComplete;
+  }
+
+  // 4. COLD: truly nothing cached anywhere. Only now pay for a live CJ call.
+  console.log("[products] Redis is COLD (no pool, no lastComplete) — fetching a quick first batch from CJ…");
   try {
     const firstBatch = await buildFirstBatch();
     if (firstBatch && firstBatch.length) {
@@ -310,8 +344,8 @@ export async function getAllProducts() {
     console.error(`[products] first-batch fetch failed: ${err.message}`);
   }
 
-  // 4. Absolute worst case: CJ unreachable and nothing cached.
-  console.warn("[products] no products available (Redis empty + CJ unreachable)");
+  // 5. Absolute worst case: CJ unreachable/exhausted AND nothing cached anywhere.
+  console.warn("[products] no products available anywhere (Redis empty, lastComplete empty, CJ unreachable/exhausted)");
   return [];
 }
 
