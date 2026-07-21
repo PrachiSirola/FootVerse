@@ -42,7 +42,7 @@ export default function AdminLayout({ children }) {
         {/* Sidebar */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-[#33231A]/10 bg-white lg:flex">
           <div className="border-b border-[#33231A]/10 px-6 py-5">
-            <p className="font-sans text-xl font-bold text-[#33231A]">FootVerse</p>
+            <p className="font-sans-serif text-xl font-bold text-[#33231A]">FootVerse</p>
             <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#A5793A]">
               Admin
             </p>

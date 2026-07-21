@@ -7,11 +7,12 @@
 @tailwind utilities;
 
 /* Version-proof font classes — no Tailwind config required. */
-.font-sans {
+.font-sans-serif {
   font-family: Inter, Arial, Helvetica, sans-serif;
 }
+
 .font-oswald {
-  font-family: "Oswald", "Arial Narrow", sans;
+  font-family: "Oswald", "Arial Narrow", sans-serif;
 }
 
 html {
@@ -21,7 +22,7 @@ html {
 body {
   background-color: #f7f4ef;
   color: #33231a;
-  font-family: "Inter", system-ui, sans;
+  font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -45,29 +46,40 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
 /* ---- FootVerse skeleton shimmer (ivory base, soft gold/taupe sweep) ---- */
 @keyframes fv-shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
+
 .fv-skeleton {
   background: linear-gradient(
     100deg,
-    #ECE6DC 25%,
-    #E3D9C6 40%,
-    #EFE9DE 60%
+    #ece6dc 25%,
+    #e3d9c6 40%,
+    #efe9de 60%
   );
   background-size: 200% 100%;
   animation: fv-shimmer 1.5s ease-in-out infinite;
   border-radius: 0.5rem;
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .fv-skeleton { animation: none; background: #ECE6DC; }
+  .fv-skeleton {
+    animation: none;
+    background: #ece6dc;
+  }
 }
 
 /* ================= RESPONSIVE SAFETY NET =================
    Guarantees nothing can push the page sideways at ANY width. If a component
    ever overflows, it's contained here rather than breaking the whole layout. */
+
 html,
 body {
   max-width: 100%;
@@ -96,5 +108,5 @@ span {
   overflow-wrap: anywhere;
 }
 
-/* Tables that must stay wide scroll inside their own container (see the admin
-   Table component) rather than stretching the page. */
+/* Tables that must stay wide scroll inside their own container
+   (see the admin Table component) rather than stretching the page. */

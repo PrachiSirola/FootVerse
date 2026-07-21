@@ -100,7 +100,7 @@ export default function ReturnRequestPage() {
   if (error && !order) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-24 text-center">
-        <h1 className="font-sans text-2xl font-bold text-[#33231A]">Order not found</h1>
+        <h1 className="font-sans-serif text-2xl font-bold text-[#33231A]">Order not found</h1>
         <Link href="/orders" className="mt-4 inline-block text-[#A5793A] underline">
           Back to your orders
         </Link>
@@ -111,7 +111,7 @@ export default function ReturnRequestPage() {
   if (done) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-20 text-center">
-        <h1 className="font-sans text-3xl font-bold text-[#33231A]">Return request submitted</h1>
+        <h1 className="font-sans-serif text-3xl font-bold text-[#33231A]">Return request submitted</h1>
         <p className="mt-3 text-[#6E655C]">{done.message}</p>
         {done.refundNote && (
           <p className="mt-2 rounded-xl bg-[#A5793A]/10 p-4 text-[13px] text-[#6E655C]">{done.refundNote}</p>
@@ -140,7 +140,7 @@ export default function ReturnRequestPage() {
         ← Back to order
       </Link>
 
-      <h1 className="mt-4 font-sans text-3xl font-bold text-[#33231A]">Return Request</h1>
+      <h1 className="mt-4 font-sans-serif text-3xl font-bold text-[#33231A]">Return Request</h1>
       <p className="mt-1 text-sm text-[#6E655C]">
         Complete the form below. Our team will review your request and respond shortly.
       </p>

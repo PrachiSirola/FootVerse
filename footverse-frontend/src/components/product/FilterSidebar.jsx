@@ -65,7 +65,7 @@ export default function FilterSidebar() {
   return (
     <aside className="w-full">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-oswald text-lg font-semibold uppercase tracking-wide text-[#33231A]">
+        <h2 className="font-sans text-lg font-semibold uppercase tracking-wide text-[#33231A]">
           Filters
         </h2>
         <button
@@ -127,11 +127,11 @@ export default function FilterSidebar() {
           />
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          {[[0, 99], [100, 199], [200, 299], [300, 499], [500, 0]].map(([lo, hi]) => (
+          {[[0, 9], [10, 19], [20, 29], [30, 39], [40, 49], [50, 0]].map(([lo, hi]) => (
             <button
               key={`${lo}-${hi}`}
               type="button"
-              onClick={() => { set("min", lo ? String(lo) : ""); set("max", hi ? String(hi) : ""); }}
+              onClick={() => set({ min: lo ? String(lo) : "", max: hi ? String(hi) : "" })}
               className="rounded-full border border-[#33231A]/15 px-3 py-1 text-[11.5px] text-[#33231A] transition-colors hover:border-[#A5793A] hover:text-[#A5793A]"
             >
               {hi ? `$${lo}–$${hi}` : `$${lo}+`}

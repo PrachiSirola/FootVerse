@@ -40,9 +40,30 @@ function walkTree(node, path, out) {
 function classifyLeaf(leaf) {
   const name = leaf.name || "";
   const path = leaf.path || name;
+  const parts = path.split(" / ");
+  const parent = parts.length >= 2 ? parts[parts.length - 2] : "";
+
+  // Leaf-name footwear signal.
+  const leafIsFootwear = FOOTWEAR_BRANCH.test(name) || FOOTWEAR_STYLE.test(name);
+
+  // 1. Leaf's OWN name is a bag/pet/accessory → always exclude.
   if (EXCLUDE.test(name)) return "no";
-  if (FOOTWEAR_BRANCH.test(path)) return "footwear";
-  if (FOOTWEAR_STYLE.test(name)) return "footwear";
+
+  // 2. HARD non-footwear parent: parent marks a clearly non-footwear section AND
+  //    does NOT also mention shoes/footwear. "Pet Outdoor Supplies", "Men's
+  //    Luggage & Bags" → exclude even a footwear-named leaf ("Trainers" for pets).
+  //    But a MIXED umbrella like "Shoes & Bags" mentions shoes, so it's NOT hard.
+  const parentExcluded = EXCLUDE.test(parent);
+  const parentMentionsShoes = FOOTWEAR_BRANCH.test(parent);
+  if (parentExcluded && !parentMentionsShoes) return "no";
+
+  // 3. From here the parent is footwear-safe (or footwear-mixed). Keep footwear.
+  if (leafIsFootwear) return "footwear";
+  // Parent explicitly a shoes section (e.g. "Shoes & Bags", "Women's Shoes")
+  // rescues footwear leaves that lack a footwear word in their own name
+  // (e.g. "Baby's First Walkers").
+  if (parentMentionsShoes) return "footwear";
+  if (FOOTWEAR_BRANCH.test(path) && !parentExcluded) return "footwear";
   if (SPORTS_SHOE.test(name) && SPORTS_BRANCH.test(path)) return "footwear";
   if (SPORTS_SHOE.test(name)) return "ambiguous";
   return "no";

@@ -1,17 +1,3 @@
-/**
- * FOOTWEAR CATEGORY SEED
- *
- * The category-ID crawler's primary source. These are CJ's stable footwear
- * category IDs (verified via getCategory). Each carries a category/subcategory
- * HINT used only as a fallback by the name-based classifier in transformCJLive —
- * the classifier resolves the real Men/Women/Kids/Sports bucket from the product
- * NAME, so these hints never misfile a product; they just seed a sensible guess.
- *
- * This seed is always included in the crawl. cjCategoryService.discoverFootwear()
- * unions it with categories auto-discovered from getCategory() at runtime, so new
- * footwear categories CJ adds are picked up automatically while these known-good
- * IDs are guaranteed present even if CJ renames something and discovery misses it.
- */
 export const FOOTWEAR_CATEGORY_SEED = [
   // ---- Women's Shoes ----
   { categoryId: "1988B912-7A18-4ED2-B1E1-61ED290A0E82", name: "Woman Boots",     category: "Women", subcategory: "Boots" },
@@ -30,15 +16,6 @@ export const FOOTWEAR_CATEGORY_SEED = [
   { categoryId: "F419006D-AE55-4691-93FC-52FEBB459DBA", name: "Casual Shoes",    category: "Men",   subcategory: "Casual" },
 ];
 
-/**
- * NICHE KEYWORD FALLBACK
- *
- * A small supplement for athletic/sport styles that don't have their own CJ
- * footwear category (Sports is a top-level storefront category, but CJ files
- * these under generic shoe categories). Run AFTER the category crawl, with the
- * same dedup/points/QPS logic, so they only add the handful of extra unique
- * products categories miss. Deliberately tiny — the opposite of the old 369.
- */
 export const NICHE_KEYWORDS = [
   { keyword: "football shoes",   category: "Sports", subcategory: "Football" },
   { keyword: "soccer cleats",    category: "Sports", subcategory: "Football" },

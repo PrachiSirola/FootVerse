@@ -11,7 +11,7 @@ export default function BrandsStrip() {
           {BRANDS.map((b) => (
             <span
               key={b}
-              className="font-oswald text-xl font-semibold uppercase tracking-[0.12em] text-[#6E655C]/70 transition-colors duration-300 hover:text-[#33231A]"
+              className="font-sans text-xl font-semibold uppercase tracking-[0.12em] text-[#6E655C]/70 transition-colors duration-300 hover:text-[#33231A]"
             >
               {b}
             </span>

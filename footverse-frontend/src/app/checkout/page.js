@@ -69,7 +69,7 @@ export default function CheckoutPage() {
     return (
       <div className="mx-auto max-w-lg px-5 py-24 text-center">
         <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#A5793A]/15 text-3xl text-[#A5793A]">✓</div>
-        <h1 className="font-sans text-3xl font-bold text-[#33231A]">Order Placed Successfully</h1>
+        <h1 className="font-sans-serif text-3xl font-bold text-[#33231A]">Order Placed Successfully</h1>
         <p className="mt-3 text-[#6E655C]">
           Order <span className="font-semibold text-[#33231A]">#{placed.orderNumber}</span>
           {"."}
@@ -90,7 +90,7 @@ export default function CheckoutPage() {
   if (detailed.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-24 text-center">
-        <h1 className="font-sans text-3xl font-bold text-[#33231A]">Nothing to checkout</h1>
+        <h1 className="font-sans-serif text-3xl font-bold text-[#33231A]">Nothing to checkout</h1>
         <Link href="/products" className="mt-4 inline-block text-[#A5793A] hover:underline">Back to Shop</Link>
       </div>
     );
@@ -104,7 +104,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-10">
-      <h1 className="mb-8 font-sans text-3xl font-bold text-[#33231A]">Checkout</h1>
+      <h1 className="mb-8 font-sans-serif text-3xl font-bold text-[#33231A]">Checkout</h1>
       <form onSubmit={handlePlace} className="flex flex-col gap-8 lg:flex-row">
         {/* LEFT */}
         <div className="flex-1 space-y-6">

@@ -244,7 +244,7 @@ function Row({ label, value, strong }) {
   return (
     <div className="flex justify-between">
       <span className="text-[#6E655C]">{label}</span>
-      <span className={strong ? "font-sans text-lg font-bold text-[#33231A]" : "font-semibold text-[#33231A]"}>
+      <span className={strong ? "font-sans-serif text-lg font-bold text-[#33231A]" : "font-semibold text-[#33231A]"}>
         {value}
       </span>
     </div>

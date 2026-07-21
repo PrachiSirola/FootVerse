@@ -122,7 +122,7 @@ function IssueDrawer({ issue, onClose, onChanged }) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#A5793A]">
               {issue.ticketNumber}
             </p>
-            <h2 className="mt-1 font-sans text-xl font-bold text-[#33231A]">{issue.subject}</h2>
+            <h2 className="mt-1 font-sans-serif text-xl font-bold text-[#33231A]">{issue.subject}</h2>
             <p className="mt-1 text-[12px] text-[#6E655C]">
               {issue.userName} · {issue.userEmail}
               {issue.orderNumber && <> · Order {issue.orderNumber}</>}

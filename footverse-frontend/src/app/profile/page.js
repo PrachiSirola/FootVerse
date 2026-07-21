@@ -29,6 +29,7 @@ export default function ProfilePage() {
   const { user, ready, logout } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState("profile");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     if (ready && !user) router.replace("/login");
@@ -45,7 +46,8 @@ export default function ProfilePage() {
   }
   if (!user) return null;
 
-  const doLogout = () => {
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
     logout();
     router.push("/login");
   };
@@ -63,7 +65,7 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <div className="mx-auto max-w-[1300px] px-5 py-10 sm:px-8">
-        <h1 className="font-sans text-4xl font-bold text-[#33231A]">My Account</h1>
+        <h1 className="font-sans-serif text-4xl font-bold text-[#33231A]">My Account</h1>
         <p className="mt-1 text-sm text-[#6E655C]">Manage your profile, orders, and preferences.</p>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
@@ -82,7 +84,7 @@ export default function ProfilePage() {
                   </button>
                 )
               )}
-              <button onClick={doLogout}
+              <button onClick={() => setShowLogoutConfirm(true)}
                 className="mt-2 block w-full rounded-xl border border-[#B8352C]/30 px-4 py-3 text-left text-sm font-semibold text-[#B8352C] transition-colors hover:bg-[#B8352C]/5">
                 Logout
               </button>
@@ -100,6 +102,47 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowLogoutConfirm(false)}
+          >
+            <motion.div
+              className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-[#33231A]">Log out?</h3>
+              <p className="mt-2 text-sm text-[#6E655C]">
+                Are you sure you want to log out of your account?
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="rounded-xl border border-[#33231A]/15 px-4 py-2 text-sm font-medium text-[#33231A] transition-colors hover:bg-[#F1ECE2]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmLogout}
+                  className="rounded-xl bg-[#B8352C] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#9c2c25]"
+                >
+                  Logout
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Footer />
     </>
   );

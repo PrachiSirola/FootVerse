@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MegaMenu from "./MegaMenu";
 import { AnimatePresence, motion } from "framer-motion";
-import { PRODUCTS } from "@/data/products";
+import { searchProducts } from "@/lib/search";
 import { CATEGORIES } from "@/data/categories";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -34,11 +34,20 @@ export default function Navbar() {
     if (searchOpen) inputRef.current?.focus();
   }, [searchOpen]);
 
-  const results = q.trim()
-    ? PRODUCTS.filter((p) =>
-        `${p.name} ${p.brand} ${p.categoryName} ${p.subcategory}`.toLowerCase().includes(q.toLowerCase()),
-      ).slice(0, 6)
-    : [];
+  // Real backend-backed search (debounced). No fake/demo product fallback —
+  // if the backend returns nothing, results stays empty and the panel shows
+  // its "No matches" state.
+  const [results, setResults] = useState([]);
+  useEffect(() => {
+    const term = q.trim();
+    if (!term) { setResults([]); return; }
+    let active = true;
+    const t = setTimeout(async () => {
+      const data = await searchProducts(term);
+      if (active) setResults((data || []).slice(0, 6));
+    }, 250);
+    return () => { active = false; clearTimeout(t); };
+  }, [q]);
   const catHits = q.trim()
     ? CATEGORIES.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()))
     : [];

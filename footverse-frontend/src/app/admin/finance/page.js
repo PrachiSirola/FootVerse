@@ -136,7 +136,7 @@ function Row({ label, value, negative, strong }) {
   return (
     <div className="flex justify-between">
       <span className={strong ? "font-semibold text-[#33231A]" : "text-[#6E655C]"}>{label}</span>
-      <span className={`${strong ? "font-sans text-lg font-bold text-[#33231A]" : negative ? "text-[#B8352C]" : "font-semibold text-[#33231A]"}`}>
+      <span className={`${strong ? "font-sans-serif text-lg font-bold text-[#33231A]" : negative ? "text-[#B8352C]" : "font-semibold text-[#33231A]"}`}>
         {value}
       </span>
     </div>

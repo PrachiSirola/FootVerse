@@ -66,7 +66,7 @@ export default function SupportPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-10">
-      <h1 className="font-sans text-3xl font-bold text-[#33231A]">Support</h1>
+      <h1 className="font-sans-serif text-3xl font-bold text-[#33231A]">Support</h1>
       <p className="mt-1 text-sm text-[#6E655C]">
         Raise a payment or order issue and our team will respond.
       </p>

@@ -15,9 +15,9 @@ module.exports = {
         goldsoft: "#D9B87A", // glows / hover tints
       },
       fontFamily: {
-        display: ['"Playfair Display"', "Georgia", "sans"],
-        condensed: ["Oswald", "Arial Narrow", "sans"],
-        sans: ["Inter", "system-ui", "sans"],
+        display: ['"Playfair Display"', "Georgia", "sans-serif"],
+        condensed: ["Oswald", "Arial Narrow", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
       },
       boxShadow: {
         cta: "0 14px 30px -14px rgba(51, 35, 26, 0.55)",

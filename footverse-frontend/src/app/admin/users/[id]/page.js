@@ -64,7 +64,7 @@ export default function AdminUserDetail() {
         {/* Wallet */}
         <Card>
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#6E655C]">Wallet</p>
-          <p className="font-sans text-2xl font-bold text-[#33231A]">{usd(user.wallet?.balance || 0)}</p>
+          <p className="font-sans-serif text-2xl font-bold text-[#33231A]">{usd(user.wallet?.balance || 0)}</p>
 
           <form onSubmit={submitWallet} className="mt-4 space-y-2.5">
             <div className="flex gap-2">

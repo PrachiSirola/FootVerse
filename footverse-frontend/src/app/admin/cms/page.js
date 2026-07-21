@@ -110,7 +110,7 @@ export default function AdminCms() {
                   {hero.eyebrow}
                 </p>
               )}
-              <h2 className="mt-2 max-w-sm font-sans text-3xl font-bold text-[#33231A]">
+              <h2 className="mt-2 max-w-sm font-sans-serif text-3xl font-bold text-[#33231A]">
                 {hero.title || "Your headline"}
               </h2>
               {hero.subtitle && (
